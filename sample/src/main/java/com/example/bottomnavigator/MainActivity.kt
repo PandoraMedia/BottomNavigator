@@ -22,7 +22,7 @@ class MainActivity : AppCompatActivity() {
 
         navigator = BottomNavigator.onCreate(
             fragmentContainer = R.id.fragment_container,
-            bottomNavigationView = findViewById(R.id.bottomnav),
+            bottomNavigationView = findViewById(R.id.bottomnav_view),
             rootFragmentsFactory = mapOf(
                 R.id.tab1 to { SampleFragment() },
                 R.id.tab2 to { SampleFragment() },

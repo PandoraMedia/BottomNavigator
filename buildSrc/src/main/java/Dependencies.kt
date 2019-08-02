@@ -1,6 +1,5 @@
 import org.gradle.api.Action
 import org.gradle.api.artifacts.ExternalModuleDependency
-import org.gradle.api.artifacts.ModuleDependency
 import org.gradle.kotlin.dsl.exclude
 
 object Version {
@@ -14,13 +13,15 @@ object Version {
     const val rxJava2Extensions = "0.20.10"
     const val junit = "4.12"
     const val mockitoKotlinVersion = "2.1.0"
+    const val espresso = "3.2.0"
+    const val androidxTest = "1.2.0"
+    const val androidxTestExt = "1.1.1"
 
     object AndroidSdk {
         const val min = 21
         const val compile = 28
         const val target = compile
     }
-
 }
 
 object Lib {
@@ -41,8 +42,12 @@ object Lib {
     const val rxjava2Extensions = "com.github.akarnokd:rxjava2-extensions:${Version.rxJava2Extensions}"
     fun rxJava2ExtensionsExcludes() = Action<ExternalModuleDependency> { exclude("io.reactivex.rxjava2") }
 
+    //Testing
     const val junit = "junit:junit:${Version.junit}"
-
     const val kotlinTest = "org.jetbrains.kotlin:kotlin-test:${Version.kotlin}"
     const val mockitoKotlin = "com.nhaarman.mockitokotlin2:mockito-kotlin:${Version.mockitoKotlinVersion}"
+    const val espressoCore = "androidx.test.espresso:espresso-core:${Version.espresso}"
+    const val androidxTestRunner = "androidx.test.ext:junit:${Version.androidxTestExt}"
+    const val androidxTestRules = "androidx.test:rules:${Version.androidxTest}"
+
 }
