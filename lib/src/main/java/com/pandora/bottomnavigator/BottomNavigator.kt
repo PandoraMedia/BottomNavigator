@@ -83,7 +83,7 @@ open class BottomNavigator internal constructor() : ViewModel() {
 
     private fun isAtRootOfStack() = tabStackMap[currentTab]?.size == 1
 
-    open fun currentStackSize() = tabStackMap[currentTab]?.size
+    open fun currentStackSize() = tabStackMap[currentTab]?.size!!
 
     /**
      * Switch to the specified tab
