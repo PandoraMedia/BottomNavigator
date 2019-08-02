@@ -12,7 +12,7 @@ import io.reactivex.disposables.CompositeDisposable
  */
 internal class ActivityDelegate(
     private val fragmentContainer: Int,
-    private val fragmentManagerFactory: () -> FragmentManager,
+    fragmentManagerFactory: () -> FragmentManager,
     private val lifecycle: Lifecycle,
     private val bottomNavigationView: BottomNavigationView,
     private val bottomNavigator: BottomNavigator

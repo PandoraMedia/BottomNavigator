@@ -28,7 +28,7 @@ open class FakeFragmentManager : FragmentManager() {
     override fun findFragmentById(id: Int): Fragment? {
         TODO(
             "not implemented"
-        ) // To change body of created functions use File | Settings | File Templates.
+        )
     }
 
     override fun putFragment(bundle: Bundle, key: String, fragment: Fragment) {}
@@ -48,7 +48,7 @@ open class FakeFragmentManager : FragmentManager() {
     override fun getBackStackEntryAt(index: Int): BackStackEntry {
         TODO(
             "not implemented"
-        ) // To change body of created functions use File | Settings | File Templates.
+        )
     }
 
     override fun executePendingTransactions() = false
@@ -186,15 +186,11 @@ class FakeFragmentTransaction(private val original: MutableMap<String?, Fragment
     }
 
     override fun isEmpty(): Boolean {
-        TODO(
-            "not implemented"
-        ) // To change body of created functions use File | Settings | File Templates.
+        return false
     }
 
     override fun isAddToBackStackAllowed(): Boolean {
-        TODO(
-            "not implemented"
-        ) // To change body of created functions use File | Settings | File Templates.
+        return true
     }
 
     override fun addSharedElement(sharedElement: View, name: String) = this
