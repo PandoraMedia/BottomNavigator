@@ -1,3 +1,13 @@
+# Contributing to Bottom Navigator
+
+If you would like to contribute code you can do so through GitHub by forking the repository and sending a pull request.
+
+## License
+
+By contributing your code, you agree to license your contribution under the terms of the Apache License Version 2.0.
+Please include following header to any code you contribute.
+
+```
 /*
  * Copyright 2019 Pandora Media, LLC
  *
@@ -13,16 +23,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.pandora.bottomnavigator
-
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
-
-internal fun Disposable.into(compositeDisposable: CompositeDisposable?) {
-    compositeDisposable?.add(this)
-}
-
-internal fun Disposable.into(map: MutableMap<String, Disposable>, key: String): Disposable {
-    map[key] = this
-    return this
-}
+```
