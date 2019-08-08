@@ -83,14 +83,13 @@ Checkout the sample app for a complete example.
 When a user taps on the currently shown bottom tab the expectation is
 that the tab's state will be reset. If the tab has a backstack then the
 stack will be removed leaving the root fragment in whatever state it was
-in. Another tap when the root Fragment is shown will discard the root
-fragment and replace it with a new root fragment, thus discarding the
-previous root fragment and its state.
+in. Another tap when the root Fragment is shown will recreate the fragment
+and replace it with the new root fragment.
 
 In order to get a smoother user experience you can avoid recreating the
 root fragment by subscribing to BottomNavigator's
-`resetRootFragmentCommand()` rx stream. Events from that stream allow
-the root fragment's state to be reset manually. For example, you can
+`resetRootFragmentCommand()` rx stream. In the subscription to that stream
+you should reset the given root fragment's state. For example, you can
 call `smoothScrollToPosition(0)` on a RecyclerView in the Fragment, or
 you might clear the text in a search box.
 
