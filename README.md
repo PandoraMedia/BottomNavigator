@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/PandoraMedia/BottomNavigator.svg?branch=master)](https://travis-ci.com/PandoraMedia/BottomNavigator)
+
 # Bottom Navigator
 
 Bottom Navigator is a library for managing multiple Fragment backstacks
