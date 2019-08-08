@@ -3,6 +3,8 @@ plugins {
     id("kotlin-android")
     id("kotlin-android-extensions")
     id("kotlin-kapt")
+    id("com.vanniktech.maven.publish")
+    id("org.jetbrains.dokka-android")
 }
 
 android {

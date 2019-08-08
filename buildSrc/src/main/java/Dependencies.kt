@@ -18,6 +18,7 @@ import org.gradle.api.artifacts.ExternalModuleDependency
 import org.gradle.kotlin.dsl.exclude
 
 object Version {
+    const val dokka = "0.9.18"
     const val kotlin = "1.3.40"
     const val androidGradlePlugin = "3.3.1"
     const val rxjava = "2.2.10"
@@ -31,6 +32,7 @@ object Version {
     const val espresso = "3.2.0"
     const val androidxTest = "1.2.0"
     const val androidxTestExt = "1.1.1"
+    const val gradleMavenPublish = "0.8.0"
 
     object AndroidSdk {
         const val min = 21
@@ -44,6 +46,8 @@ object Lib {
     object BuildPlugin {
         const val kotlinGradle = "org.jetbrains.kotlin:kotlin-gradle-plugin:${Version.kotlin}"
         const val androidGradlePlugin = "com.android.tools.build:gradle:${Version.androidGradlePlugin}"
+        const val gradleMavenPublish = "com.vanniktech:gradle-maven-publish-plugin:${Version.gradleMavenPublish}"
+        const val dokka = "org.jetbrains.dokka:dokka-android-gradle-plugin:${Version.dokka}"
     }
 
     const val kotlinStdLib = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Version.kotlin}"

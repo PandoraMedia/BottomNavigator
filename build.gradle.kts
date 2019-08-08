@@ -9,6 +9,8 @@ buildscript {
     dependencies {
         classpath(Lib.BuildPlugin.androidGradlePlugin)
         classpath(Lib.BuildPlugin.kotlinGradle)
+        classpath(Lib.BuildPlugin.gradleMavenPublish)
+        classpath(Lib.BuildPlugin.dokka)
     }
 }
 

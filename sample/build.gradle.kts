@@ -26,7 +26,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":lib"))
+    implementation(project(":bottom-navigator"))
 
     implementation(Lib.kotlinStdLib)
     implementation(Lib.appCompat)
