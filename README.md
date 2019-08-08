@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/PandoraMedia/BottomNavigator.svg?branch=master)](https://travis-ci.com/PandoraMedia/BottomNavigator)
+[![Build Status](https://travis-ci.com/PandoraMedia/BottomNavigator.svg?branch=master)](https://travis-ci.com/PandoraMedia/BottomNavigator) <a href='https://search.maven.org/search?q=g:com.pandora.bottomnavigator%20a:bottom-navigator'><img src='https://img.shields.io/maven-central/v/com.pandora.bottomnavigator/bottom-navigator.svg'></a> <img src='https://img.shields.io/github/license/pandoramedia/BottomNavigator'>
 
 # Bottom Navigator
 
