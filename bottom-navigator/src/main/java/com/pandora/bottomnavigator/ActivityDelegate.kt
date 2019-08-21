@@ -50,6 +50,7 @@ internal class ActivityDelegate(
         val fragmentTransactionHandler =
             FragmentTransactionHandler(fragmentManager, fragmentContainer)
         bottomNavigator.fragmentTransactionPublisher
+            .observeOn(AndroidSchedulers.mainThread())
             .subscribe { command ->
                 fragmentTransactionHandler.handle(command)
             }

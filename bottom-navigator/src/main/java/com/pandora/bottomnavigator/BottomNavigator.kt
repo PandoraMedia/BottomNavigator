@@ -57,7 +57,7 @@ open class BottomNavigator internal constructor() : ViewModel() {
     /*
      * Backstack per tab, map of tabs to Fragment tags
      */
-    private val tabStackMap = StackOfStacks<Int, TagStructure>()
+    private val tabStackMap: MultipleStacks<Int, TagStructure> = StackOfStacks()
 
     // keep track of tab switches
     private val tabSwitches = mutableListOf<NavigatorAction.TabSwitched>()
@@ -109,7 +109,7 @@ open class BottomNavigator internal constructor() : ViewModel() {
         currentTab = tab
 
         if (tabStackMap.stackExists(tab)) {
-            tabStackMap.moveToTop(tab)
+            tabStackMap.switchToTab(tab)
             fragmentCommand(ShowExisting(tabStackMap.peekValue()!!))
         } else {
             val (rootFragment, isDetachable) = rootFragmentsFactory.getValue(tab)()

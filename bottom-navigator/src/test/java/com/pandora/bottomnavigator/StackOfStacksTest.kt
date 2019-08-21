@@ -72,11 +72,11 @@ class StackOfStacksTest {
         // Then stack 2 is at the top of the stacks.
         assertEquals(2, stack.peekKey())
         // When we move stack 1 to the top.
-        stack.moveToTop(1)
+        stack.switchToTab(1)
         // Then stack 1 is at the top.
         assertEquals(1, stack.peekKey())
         // When we move a non existing stack to the top
-        stack.moveToTop(3)
+        stack.switchToTab(3)
         // Then stack 1 is still at the top
         assertEquals(1, stack.peekKey())
     }
