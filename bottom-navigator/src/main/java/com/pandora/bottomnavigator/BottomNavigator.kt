@@ -20,6 +20,8 @@ import androidx.annotation.IdRes
 import androidx.annotation.VisibleForTesting
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.SavedStateViewModelFactory
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -32,8 +34,12 @@ import com.pandora.bottomnavigator.FragmentTransactionCommand.ShowExisting
 import hu.akarnokd.rxjava2.subjects.UnicastWorkSubject
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
+import kotlinx.android.parcel.Parcelize
+import kotlinx.android.parcel.RawValue
 
-open class BottomNavigator internal constructor() : ViewModel() {
+open class BottomNavigator internal constructor(private val savedState: SavedStateHandle) :
+    ViewModel() {
+
     internal val fragmentTransactionPublisher = UnicastWorkSubject.create<CommandWithRunnable>()
     internal val bottomnavViewSetSelectedItemObservable = UnicastWorkSubject.create<Int>()
     private val resetRootFragmentSubject = UnicastWorkSubject.create<Fragment>()
@@ -57,10 +63,7 @@ open class BottomNavigator internal constructor() : ViewModel() {
     /*
      * Backstack per tab, map of tabs to Fragment tags
      */
-    private val tabStackMap = StackOfStacks<Int, TagStructure>()
-
-    // keep track of tab switches
-    private val tabSwitches = mutableListOf<NavigatorAction.TabSwitched>()
+    private val tabStackMap = MultipleStacksSavedStateWrapper(StackOfStacks(), savedState)
 
     private var currentTab = -1
         set(value) {
@@ -70,7 +73,12 @@ open class BottomNavigator internal constructor() : ViewModel() {
             if (value != -1) {
                 bottomnavViewSetSelectedItemObservable.onNext(value)
             }
+
+            savedState.set("CURRENT_TAB", value)
         }
+
+    // keep track of tab switches
+    private val tabSwitches = mutableListOf<NavigatorAction.TabSwitched>()
 
     private var defaultTab: Int = -1
     private lateinit var rootFragmentsFactory: Map<Int, () -> FragmentInfo>
@@ -83,7 +91,7 @@ open class BottomNavigator internal constructor() : ViewModel() {
             if (isAtRootOfStack()) {
                 val currentFragment = currentFragment()
                 val tabstackAndFragmentManagerInSync = currentFragment != null &&
-                    tabStackMap.peekValue().toString() == currentFragment.tag
+                        tabStackMap.peekValue().toString() == currentFragment.tag
 
                 if (resetRootFragmentSubject.hasObservers() && tabstackAndFragmentManagerInSync) {
                     resetRootFragmentSubject.onNext(currentFragment!!)
@@ -109,7 +117,7 @@ open class BottomNavigator internal constructor() : ViewModel() {
         currentTab = tab
 
         if (tabStackMap.stackExists(tab)) {
-            tabStackMap.moveToTop(tab)
+            tabStackMap.switchToTab(tab)
             fragmentCommand(ShowExisting(tabStackMap.peekValue()!!))
         } else {
             val (rootFragment, isDetachable) = rootFragmentsFactory.getValue(tab)()
@@ -313,7 +321,7 @@ open class BottomNavigator internal constructor() : ViewModel() {
             @IdRes fragmentContainer: Int,
             bottomNavigationView: BottomNavigationView
         ): BottomNavigator {
-            val navigator = ViewModelProviders.of(activity).get(BottomNavigator::class.java)
+            val navigator = obtainViewModel(activity)
             val fragmentFactoryWithDetachability =
                 rootFragmentsFactory.mapValues { { FragmentInfo(it.value(), true) } }
             navigator.onCreate(
@@ -355,7 +363,7 @@ open class BottomNavigator internal constructor() : ViewModel() {
             @IdRes fragmentContainer: Int,
             bottomNavigationView: BottomNavigationView
         ): BottomNavigator {
-            val navigator = ViewModelProviders.of(activity).get(BottomNavigator::class.java)
+            val navigator = obtainViewModel(activity)
             navigator.onCreate(
                 rootFragmentsFactory = rootFragmentsFactory,
                 defaultTab = defaultTab,
@@ -371,8 +379,17 @@ open class BottomNavigator internal constructor() : ViewModel() {
          * BottomNavigator uses Architecture Component's ViewModel to provide the same instance across configuration changes.
          */
         @JvmStatic
-        fun provide(activity: FragmentActivity): BottomNavigator =
-            ViewModelProviders.of(activity).get(BottomNavigator::class.java)
+        fun provide(activity: FragmentActivity): BottomNavigator = obtainViewModel(activity)
+
+        private fun obtainViewModel(activity: FragmentActivity): BottomNavigator {
+            return ViewModelProviders.of(
+                activity, SavedStateViewModelFactory(
+                    activity
+                        .getApplication(), activity
+                )
+            )
+                .get(BottomNavigator::class.java)
+        }
     }
 
     @VisibleForTesting()
@@ -393,7 +410,10 @@ open class BottomNavigator internal constructor() : ViewModel() {
 
         activityDelegate?.clear()
         activityDelegate = ActivityDelegate(
-            fragmentContainer, fragmentManagerFactory, activity.lifecycle, bottomNavigationView,
+            fragmentContainer,
+            fragmentManagerFactory,
+            activity.lifecycle,
+            bottomNavigationView,
             this
         )
     }
@@ -441,3 +461,47 @@ data class FragmentInfo(
      */
     val isDetachable: Boolean
 )
+
+private class MultipleStacksSavedStateWrapper(
+    private val stacks: MultipleStacks<Int, TagStructure>,
+    private val savedState: SavedStateHandle
+) : MultipleStacks<Int, TagStructure> {
+
+    override fun pop(): TagStructure? {
+        val ret = stacks.pop()
+        savedState.set("STACKS", stacks)
+        return ret
+    }
+
+    override fun push(tab: Int, value: TagStructure) {
+        stacks.push(tab, value)
+        savedState.set("STACKS", stacks)
+    }
+
+    override fun switchToTab(tab: Int) {
+        stacks.switchToTab(tab)
+        savedState.set("STACKS", stacks)
+    }
+
+    override fun remove(tab: Int) {
+        stacks.remove(tab)
+        savedState.set("STACKS", stacks)
+    }
+
+    override fun clear() {
+        stacks.clear()
+        savedState.set("STACKS", stacks)
+    }
+
+    override fun get(tab: Int) = stacks[tab]
+
+    override fun keys() = stacks.keys()
+
+    override fun stackExists(tab: Int) = stacks.stackExists(tab)
+
+    override fun peek() = stacks.peek()
+
+    override fun peekKey() = stacks.peekKey()
+
+    override fun peekValue() = stacks.peekValue()
+}

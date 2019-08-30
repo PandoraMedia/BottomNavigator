@@ -38,8 +38,6 @@ open class FakeFragmentManager : FragmentManager() {
 
     override fun getFragments() = map.values.map { it.fragment }
 
-    override fun saveFragmentInstanceState(f: Fragment?) = null
-
     override fun findFragmentById(id: Int): Fragment? {
         TODO(
             "not implemented"
@@ -76,11 +74,6 @@ open class FakeFragmentManager : FragmentManager() {
 
     override fun addOnBackStackChangedListener(listener: OnBackStackChangedListener) {}
 
-    override fun dump(
-        prefix: String?, fd: FileDescriptor?, writer: PrintWriter?, args: Array<out String>?
-    ) {
-    }
-
     override fun isStateSaved() = false
 
     override fun popBackStack() {}
@@ -97,7 +90,7 @@ open class FakeFragmentManager : FragmentManager() {
 
 class FakeFragmentTransaction(private val original: MutableMap<String?, FragmentState>) :
     FragmentTransaction() {
-    private var mCommitRunnables: ArrayList<Runnable>? = null
+    private var commitRunnables: ArrayList<Runnable>? = null
     private val copy = HashMap(original)
 
     private fun findFragmentKey(fragment: Fragment): String? {
@@ -153,7 +146,7 @@ class FakeFragmentTransaction(private val original: MutableMap<String?, Fragment
         original.clear()
         original.putAll(copy)
 
-        mCommitRunnables?.forEach { it.run() }
+        commitRunnables?.forEach { it.run() }
 
         return 1
     }
@@ -161,10 +154,10 @@ class FakeFragmentTransaction(private val original: MutableMap<String?, Fragment
     override fun setPrimaryNavigationFragment(fragment: Fragment?) = this
 
     override fun runOnCommit(runnable: Runnable): FragmentTransaction {
-        if (mCommitRunnables == null) {
-            mCommitRunnables = ArrayList()
+        if (commitRunnables == null) {
+            commitRunnables = ArrayList()
         }
-        mCommitRunnables?.add(runnable)
+        commitRunnables?.add(runnable)
 
         return this
     }

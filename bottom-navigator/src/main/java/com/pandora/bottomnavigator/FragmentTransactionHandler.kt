@@ -15,6 +15,7 @@
  */
 package com.pandora.bottomnavigator
 
+import android.os.Parcelable
 import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -25,6 +26,8 @@ import com.pandora.bottomnavigator.FragmentTransactionCommand.RemoveAllAndAdd
 import com.pandora.bottomnavigator.FragmentTransactionCommand.RemoveAllAndShowExisting
 import com.pandora.bottomnavigator.FragmentTransactionCommand.ShowAndRemove
 import com.pandora.bottomnavigator.FragmentTransactionCommand.ShowExisting
+import kotlinx.android.parcel.IgnoredOnParcel
+import kotlinx.android.parcel.Parcelize
 import java.util.UUID
 
 internal data class CommandWithRunnable(
@@ -75,7 +78,8 @@ internal class FragmentTransactionHandler(
                 transaction.remove(removeFragment)
             }
         }
-        transaction.add(container, add, addTag.toString())
+        transaction
+            .add(container, add, addTag.toString())
             .detachOtherFragments(add)
             .runOnCommit(runnable)
             .setReorderingAllowed(true)
@@ -95,7 +99,8 @@ internal class FragmentTransactionHandler(
             }
         }
         val fragment = fm.findFragmentByTag(show.toString())!!
-        transaction.showOrAttach(fragment)
+        transaction
+            .showOrAttach(fragment)
             .detachOtherFragments(fragment)
             .runOnCommit(runnable)
             .setReorderingAllowed(true)
@@ -179,17 +184,19 @@ internal class FragmentTransactionHandler(
 /**
  * Info that gets serialized into the FragmentManager's fragment tag string
  */
+@Parcelize
 internal class TagStructure private constructor(
     val className: String?,
     val detachable: Boolean?,
     val uuid: String?
-) {
+): Parcelable {
     constructor(fragment: Fragment, detachable: Boolean) :
         this(fragment::class.java.name, detachable, UUID.randomUUID().toString())
 
-    var isOurFragment = true
-        private set
-    var isDetachable = detachable == true
+    @IgnoredOnParcel
+    val isOurFragment = className==null && detachable==null && uuid==null
+    @IgnoredOnParcel
+    val isDetachable = detachable == true
 
     override fun toString(): String {
         return StringBuilder()
@@ -208,16 +215,16 @@ internal class TagStructure private constructor(
         private const val SEPARATOR = "|"
         private const val DETACHABLE = "DETACHABLE"
 
+        private val INVALID_TAG = TagStructure(null, null, null)
+
         fun fromTag(tag: String?): TagStructure {
             if (tag == null || !tag.startsWith(OURTAG)) {
-                return TagStructure(null, null, null)
-                    .apply { isOurFragment = false }
+                return INVALID_TAG
             }
 
             val (ourTag, className, detachable, uuid) = tag.split(SEPARATOR)
 
-            if (ourTag != OURTAG) return TagStructure(null, null, null)
-                .apply { isOurFragment = false }
+            if (ourTag != OURTAG) return INVALID_TAG
 
             return TagStructure(className, DETACHABLE == detachable, uuid)
         }

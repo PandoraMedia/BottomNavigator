@@ -15,6 +15,8 @@
  */
 package com.pandora.bottomnavigator
 
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 import java.util.ArrayDeque
 import java.util.EmptyStackException
 import java.util.LinkedHashMap
@@ -24,28 +26,30 @@ import java.util.NoSuchElementException
  * A stack of key/stack pairs. Behaves as both a Stack and a Map, and the value of each entry is also a Stack.
  * K is the Key type and V is the type of the elements in the nested stacks.
  */
-class StackOfStacks<K, V> {
+@Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
+@Parcelize
+class StackOfStacks<K, V : Parcelable> : MultipleStacks<K, V>, Parcelable {
     // We use LinkedHashMap to take advantage of the insertion ordering to move items in the stack.
     private val listOfStacks: LinkedHashMap<K, Stack<V>> = LinkedHashMap()
 
-    fun stackExists(key: K) = listOfStacks[key] != null && !listOfStacks[key]!!.isEmpty()
+    override fun stackExists(key: K) = listOfStacks[key] != null && !listOfStacks[key]!!.isEmpty()
 
     /**
      * Pushes a value on to the given key's stack and moves that stack to the top.
      */
-    fun push(key: K, value: V) {
+    override fun push(key: K, value: V) {
         var stack = listOfStacks[key]
         if (stack == null) {
             stack = Stack()
             listOfStacks[key] = stack
         } else {
-            moveToTop(key)
+            switchToTab(key)
         }
 
         stack.push(value)
     }
 
-    fun moveToTop(key: K) {
+    override fun switchToTab(key: K) {
         val stackToMove = listOfStacks[key]
         if (stackToMove != null && peekKey() != key) {
             listOfStacks.remove(key)
@@ -53,7 +57,7 @@ class StackOfStacks<K, V> {
         }
     }
 
-    fun pop(): V? {
+    override fun pop(): V? {
         return try {
             getTopStack().second.pop()
         } catch (e: EmptyStackException) {
@@ -64,7 +68,7 @@ class StackOfStacks<K, V> {
     /**
      * Removes the specified key and its corresponding stack from this map.
      */
-    fun remove(key: K) {
+    override fun remove(key: K) {
         listOfStacks.remove(key)
     }
 
@@ -73,12 +77,12 @@ class StackOfStacks<K, V> {
      * or `null` if this map contains no mapping for the key.
      * The top of the stack is the last element in the returned list.
      */
-    operator fun get(key: K): List<V>? = listOfStacks[key]?.asList()
+    override operator fun get(key: K): List<V>? = listOfStacks[key]?.asList()
 
     /**
      * returns the key/value Pair at the top of the stack
      */
-    fun peek(): Pair<K, V>? {
+    override fun peek(): Pair<K, V>? {
         return try {
             val (key, stack) = getTopStack()
             Pair(key, stack.peek())
@@ -90,7 +94,7 @@ class StackOfStacks<K, V> {
     /**
      * returns the key at the top of the stack
      */
-    fun peekKey(): K? {
+    override fun peekKey(): K? {
         return try {
             val (key, _) = getTopStack()
             return key
@@ -102,7 +106,7 @@ class StackOfStacks<K, V> {
     /**
      * returns the value at the top of the stack of the top stack
      */
-    fun peekValue(): V? {
+    override fun peekValue(): V? {
         return try {
             val (_, value) = getTopStack()
             return value.peek()
@@ -114,7 +118,7 @@ class StackOfStacks<K, V> {
     /**
      * Removes all the keys from the map
      */
-    fun clear() {
+    override fun clear() {
         listOfStacks.clear()
     }
 
@@ -140,7 +144,7 @@ class StackOfStacks<K, V> {
         return Pair(topKey, topStack)
     }
 
-    fun keys() = listOfStacks.keys
+    override fun keys() = listOfStacks.keys
 }
 
 /**

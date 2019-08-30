@@ -26,6 +26,7 @@ object Version {
     const val materialComponents = "1.0.0"
     const val constraintLayout = "1.1.3"
     const val archComponentsLifecycle = "2.0.0"
+    const val lifecycleViewModelSavedState = "1.0.0-alpha03"
     const val rxJava2Extensions = "0.20.10"
     const val junit = "4.12"
     const val mockitoKotlinVersion = "2.1.0"
@@ -55,6 +56,7 @@ object Lib {
     const val materialComponents = "com.google.android.material:material:${Version.materialComponents}"
     const val lifecycleViewModel = "androidx.lifecycle:lifecycle-viewmodel:${Version.archComponentsLifecycle}"
     const val lifecycleExtensions = "androidx.lifecycle:lifecycle-extensions:${Version.archComponentsLifecycle}"
+    const val lifecycleViewModelSavedState = "androidx.lifecycle:lifecycle-viewmodel-savedstate:${Version.lifecycleViewModelSavedState}"
     const val rxjava2 = "io.reactivex.rxjava2:rxjava:${Version.rxjava}"
 
     const val rxjava2Extensions = "com.github.akarnokd:rxjava2-extensions:${Version.rxJava2Extensions}"

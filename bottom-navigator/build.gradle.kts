@@ -24,13 +24,15 @@ android {
 dependencies {
 
     implementation(Lib.kotlinStdLib)
-    implementation(Lib.appCompat)
+    implementation("androidx.activity:activity:1.1.0-alpha02")
+    implementation("androidx.fragment:fragment:1.2.0-alpha02")
     implementation(Lib.materialComponents)
     implementation(Lib.lifecycleViewModel)
     implementation(Lib.lifecycleExtensions)
     api(Lib.rxjava2)
-
     implementation(Lib.rxjava2Extensions, Lib.rxJava2ExtensionsExcludes())
+    implementation(Lib.lifecycleViewModelSavedState)
+
     testImplementation(Lib.junit)
     testImplementation(Lib.kotlinTest)
     testImplementation(Lib.mockitoKotlin)
