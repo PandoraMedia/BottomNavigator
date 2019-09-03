@@ -46,7 +46,7 @@ class BottomNavigatorTest {
     private val tab2 = 2
     private val tab3 = 3
     private val tab4 = 4
-    private val vmStore = ViewModelStore()
+    private var vmStore = ViewModelStore()
     private var fragmentManager = FakeFragmentManager()
     private lateinit var rootFragment1: Fragment
     private lateinit var rootFragment2: Fragment
@@ -651,6 +651,48 @@ class BottomNavigatorTest {
         }
         // And a fragment removed event
         infoSubscriber.assertLatest { it is NavigatorAction.FragmentRemoved }
+    }
+
+    @Test fun `Restore after app is killed in the background`() {
+        // Given an initialized BottomNavigator
+        val firstActivity = generateActivityMock()
+        val navigator = BottomNavigator.onCreate(
+            activity = firstActivity,
+            rootFragmentsFactory = rootFragmentsFactory,
+            fragmentContainer = 123,
+            bottomNavigationView = generateBottomViewMock(),
+            defaultTab = tab2
+        ).apply {
+            // And the activity starts
+            activityDelegate!!.onActivityStart()
+        }
+        // And some fragments have been added
+        navigator.addFragment(mock(), tab1)
+        navigator.addFragment(mock(), tab2)
+        navigator.addFragment(mock(), tab3)
+        navigator.addFragment(mock(), tab4)
+        // Then we have 8 fragments, each root fragment plus the 4 fragments we added
+        assertEquals(8, fragmentManager.map.size)
+
+        // When the app is killed in the background and a new Activity is restored. But with the
+        // same fragmentManager in order to simulate the fragmentManager restoring it's state and
+        // recreating all the fragments.
+        vmStore = ViewModelStore()
+        val newActiviy = generateActivityMock()
+        // And a new navigator is created with the new activity
+        BottomNavigator.onCreate(
+            activity = newActiviy,
+            rootFragmentsFactory = rootFragmentsFactory,
+            fragmentContainer = 123,
+            bottomNavigationView = generateBottomViewMock(),
+            defaultTab = tab2
+        ).apply {
+            // And the activity starts
+            activityDelegate!!.onActivityStart()
+        }
+
+        assertEquals(1, fragmentManager.map.size)
+
     }
 
     private fun <T> TestObserver<T>.assertLatest(predicate: (t: T) -> Boolean) {
