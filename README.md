@@ -97,8 +97,8 @@ you might clear the text in a search box.
 
 ## Detachability
 
-By default, as Fragments are hidden and shown as the user navigates
-around the fragments are attached and detached which generates the
+By default as Fragments are hidden and shown as the user navigates
+around, the fragments are attached and detached which generates the
 `onDestroyView`/`onCreateView` lifecycle on the Fragments. This is good
 for memory consumption because it allows View objects that are not being
 seen by the user to be garbage collected and then recreated in
@@ -134,6 +134,10 @@ dependencies {
     implementation 'com.pandora.bottomnavigator:bottom-navigator:1.1'
 }
 ```
+
+## Further reading
+
+https://engineering.pandora.com/announcing-bottom-navigator-64f6e426a6b1
 
 ## License
 ```
