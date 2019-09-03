@@ -39,6 +39,7 @@ internal sealed class FragmentTransactionCommand {
     data class Clear(val allCurrentTags: List<TagStructure>) : FragmentTransactionCommand()
     data class RemoveAllAndAdd(val remove: List<TagStructure>, val add: AddAndShow) : FragmentTransactionCommand()
     data class RemoveAllAndShowExisting(val remove: List<TagStructure>, val show: ShowExisting) : FragmentTransactionCommand()
+    data class RemoveUnknown(val knownFragments: List<TagStructure>): FragmentTransactionCommand()
 }
 
 internal class FragmentTransactionHandler(
@@ -60,6 +61,7 @@ internal class FragmentTransactionHandler(
             is Clear -> clear(runnable)
             is RemoveAllAndAdd -> removeAllAndAdd(command.remove, command.add.fragment, command.add.tag, runnable)
             is RemoveAllAndShowExisting -> removeAllAndShow(command.remove, command.show.tag, runnable)
+            is FragmentTransactionCommand.RemoveUnknown -> removeUnknown(command, runnable)
         }
     }
 
@@ -174,12 +176,39 @@ internal class FragmentTransactionHandler(
             .setReorderingAllowed(true)
             .commitNow()
     }
+
+    private fun removeUnknown(
+        command: FragmentTransactionCommand.RemoveUnknown,
+        runnable: () -> Unit
+    ) {
+        val knownFragments = command.knownFragments
+
+        val unknown = fm.fragments
+            .filter {
+                val tag = TagStructure.fromTag(it.tag)
+
+                // it's our fragment but we don't know about it
+                tag.isOurFragment && !knownFragments.contains(tag)
+            }
+
+        if (unknown.isNotEmpty()) {
+            unknown
+                .fold(fm.beginTransaction()) { transaction, fragment ->
+                    transaction.remove(fragment)
+                }
+                .runOnCommit(runnable)
+                .setReorderingAllowed(true)
+                .commitNow()
+        }
+    }
+
 }
 
 /**
  * Info that gets serialized into the FragmentManager's fragment tag string
  */
-internal class TagStructure private constructor(
+@Suppress("DataClassPrivateConstructor")
+internal data class TagStructure private constructor(
     val className: String?,
     val detachable: Boolean?,
     val uuid: String?

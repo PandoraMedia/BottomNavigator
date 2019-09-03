@@ -287,6 +287,7 @@ open class BottomNavigator internal constructor() : ViewModel() {
                     it.className, null
                 )
             }
+            is FragmentTransactionCommand.RemoveUnknown -> emptyList() // no info
         }
     }
 
@@ -396,6 +397,18 @@ open class BottomNavigator internal constructor() : ViewModel() {
             fragmentContainer, fragmentManagerFactory, activity.lifecycle, bottomNavigationView,
             this
         )
+
+        cleanupUnknownFragments()
+    }
+
+    /**
+     * If the app is killed in the background FragmentManager will restore the previous Fragments
+     * but BottomNavigator will be unaware of those restored Fragments. This fragmentCommand will
+     * remove all fragments that we are unaware of to prevent that memory leak.
+     */
+    private fun cleanupUnknownFragments() {
+        val allKnownTags = tabStackMap.keys().map { tabStackMap[it]!! }.flatMap { it.toList() }
+        fragmentCommand(FragmentTransactionCommand.RemoveUnknown(allKnownTags))
     }
 
     private fun validateInputs(
