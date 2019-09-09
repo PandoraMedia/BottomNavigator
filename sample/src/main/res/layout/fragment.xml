@@ -27,4 +27,12 @@
         android:layout_marginTop="100dp"
         android:text="Add Fragment"
         tools:ignore="HardcodedText" />
+
+    <Button
+        android:id="@+id/btn_clear_all"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="Clear all stacks"
+        tools:ignore="HardcodedText" />
 </LinearLayout>

@@ -575,6 +575,39 @@ class BottomNavigatorTest {
 
     }
 
+    @Test fun `clear from non-default tab`() {
+        // Given a BottomNavigator with two fragments on tab2
+        val bottomNavView = generateBottomViewMock()
+        val inorder = inOrder(bottomNavView)
+
+        val bottomNavigator = BottomNavigator.onCreate(
+            activity = generateActivityMock(),
+            rootFragmentsFactory = rootFragmentsFactory,
+            fragmentContainer = 123,
+            bottomNavigationView = bottomNavView,
+            defaultTab = tab2
+        ).apply {
+            // And the activity starts
+            activityDelegate!!.onActivityStart()
+        }
+        val frag2_2 = mock<Fragment> { on { toString() } doReturn "fragment2_2" }
+        bottomNavigator.addFragment(frag2_2)
+        inorder.verify(bottomNavView).selectedItemId = 2
+        // And two fragments on tab1
+        bottomNavigator.switchTab(tab1)
+        inorder.verify(bottomNavView).selectedItemId = 1
+        val frag1_2 = mock<Fragment> { on { toString() } doReturn "fragment1_2" }
+        bottomNavigator.addFragment(frag1_2)
+        // When we call clearAll()
+        bottomNavigator.clearAll()
+        // Then there is only one fragment in fragmentManager
+        assertEquals(1, fragmentManager.map.size)
+        // And the defaultTab's fragment is shown
+        assertTrue { fragmentManager.attachedFragments()[0] == rootFragment2 }
+        // And the default tab is selected again
+        inorder.verify(bottomNavView).selectedItemId = 2
+    }
+
     @Test fun `all fragment transactions produce an infoStream event`() {
         // Given a BottomNavigator
         val navigator = BottomNavigator.onCreate(
