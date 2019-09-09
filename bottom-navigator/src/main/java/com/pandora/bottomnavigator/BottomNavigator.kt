@@ -137,6 +137,7 @@ open class BottomNavigator internal constructor() : ViewModel() {
      */
     private fun addFragmentInternal(fragment: Fragment, @IdRes tab: Int, detachable: Boolean) {
         val fragmentTag = TagStructure(fragment, detachable)
+        if (currentTab != tab) currentTab = tab
         tabStackMap.push(tab, fragmentTag)
         fragmentCommand(AddAndShow(fragment, fragmentTag))
     }

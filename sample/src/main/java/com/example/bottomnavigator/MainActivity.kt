@@ -84,6 +84,10 @@ class SampleFragment : Fragment() {
             toolbar.setNavigationOnClickListener { bottomNavigator.pop() }
         }
 
+        rootView.findViewById<Button>(R.id.btn_clear_all).setOnClickListener {
+            bottomNavigator.clearAll()
+        }
+
         return rootView
     }
 
