@@ -15,6 +15,7 @@
  */
 package com.pandora.bottomnavigator
 
+import android.os.Bundle
 import android.view.MenuItem
 import androidx.annotation.IdRes
 import androidx.annotation.VisibleForTesting
@@ -28,6 +29,7 @@ import com.pandora.bottomnavigator.FragmentTransactionCommand.Clear
 import com.pandora.bottomnavigator.FragmentTransactionCommand.RemoveAllAndAdd
 import com.pandora.bottomnavigator.FragmentTransactionCommand.RemoveAllAndShowExisting
 import com.pandora.bottomnavigator.FragmentTransactionCommand.ShowAndRemove
+import com.pandora.bottomnavigator.FragmentTransactionCommand.ShowAndRemoveWithResult
 import com.pandora.bottomnavigator.FragmentTransactionCommand.ShowExisting
 import hu.akarnokd.rxjava2.subjects.UnicastWorkSubject
 import io.reactivex.Observable
@@ -176,6 +178,19 @@ open class BottomNavigator internal constructor() : ViewModel() {
         }
     }
 
+    open fun popWithResult(bundle: Bundle?): Boolean {
+        val popped = tabStackMap.pop()!!
+        val peek = tabStackMap.peek()
+        return if (peek == null) {
+            false
+        } else {
+            val (tab, nextFragment) = peek
+            if (currentTab != tab) currentTab = tab
+            fragmentCommand(ShowAndRemoveWithResult(nextFragment, popped, bundle))
+            true
+        }
+    }
+
     /**
      * Clears backstacks on all tabs, resets everything back to the default tab with its default root fragment.
      */
@@ -274,6 +289,12 @@ open class BottomNavigator internal constructor() : ViewModel() {
                 listOf(
                     NavigatorAction.FragmentRemoved(
                         command.removeTag.className, command.showTag.className
+                    )
+                )
+            is ShowAndRemoveWithResult ->
+                listOf(
+                    NavigatorAction.FragmentRemovedWithResult(
+                        command.removeTag.className, command.showTag.className, command.result
                     )
                 )
             is RemoveAllAndShowExisting -> {
@@ -439,6 +460,9 @@ sealed class NavigatorAction {
     data class TabSwitched(@IdRes val newTab: Int, @IdRes val previousTab: Int) : NavigatorAction()
     data class FragmentRemoved(
         val removedFragmentClassName: String?, val newShownFragmentClassName: String?
+    ) : NavigatorAction()
+    data class FragmentRemovedWithResult(
+        val removedFragmentClassName: String?, val newShownFragmentClassName: String?, val result: Bundle?
     ) : NavigatorAction()
 }
 
