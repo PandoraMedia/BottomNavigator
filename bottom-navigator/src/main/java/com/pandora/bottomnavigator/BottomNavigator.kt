@@ -100,6 +100,8 @@ open class BottomNavigator internal constructor() : ViewModel() {
 
     open fun currentStackSize() = tabStackMap[currentTab]?.size!!
 
+    open fun stackSize(@IdRes tab: Int): Int = tabStackMap[tab]?.size ?: 0
+
     /**
      * Switch to the specified tab
      */
