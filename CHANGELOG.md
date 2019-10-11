@@ -1,6 +1,10 @@
 Change Log
 ==========
 
+Version 1.4 (2019-10-10)
+------------------------
+* New API: get any stack's size, issue #9. 
+
 Version 1.3 (2019-09-09)
 ------------------------
 * Fix: clearAll bug, issue #6. 
