@@ -728,6 +728,29 @@ class BottomNavigatorTest {
 
     }
 
+    @Test fun `get another tabs stack size`() {
+        // Given a BottomNavigator with two fragments on tab2
+        val bottomNavigator = BottomNavigator.onCreate(
+            activity = generateActivityMock(),
+            rootFragmentsFactory = rootFragmentsFactory,
+            fragmentContainer = 123,
+            bottomNavigationView = generateBottomViewMock(),
+            defaultTab = tab2
+        ).apply {
+            // And the activity starts
+            activityDelegate!!.onActivityStart()
+        }
+        val frag2_2 = mock<Fragment> { on { toString() } doReturn "fragment2_2" }
+        bottomNavigator.addFragment(frag2_2)
+
+        // When we switch to tab1
+        bottomNavigator.switchTab(tab1)
+
+        // Tab2's stack size is 2
+        assertEquals(2, bottomNavigator.stackSize(tab2))
+
+    }
+
     private fun <T> TestObserver<T>.assertLatest(predicate: (t: T) -> Boolean) {
         assertValueAt(valueCount() - 1, predicate)
     }
