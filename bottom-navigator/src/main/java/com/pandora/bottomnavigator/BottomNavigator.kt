@@ -47,6 +47,11 @@ open class BottomNavigator internal constructor() : ViewModel() {
      */
     open fun resetRootFragmentCommand(): Observable<Fragment> = resetRootFragmentSubject.hide()!!
 
+    /**
+     *  Returns if resetRootFragmentSubject has any observer
+     */
+    open fun hasObserversResetRootFragmentCommand() = resetRootFragmentSubject.hasObservers()
+
     private val infoPublisher = PublishSubject.create<NavigatorAction>()
 
     /**
