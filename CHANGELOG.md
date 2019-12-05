@@ -1,6 +1,10 @@
 Change Log
 ==========
 
+Version 1.5 (2019-12-04)
+------------------------
+* New API: resetRootFragmentCommandHasObservers 
+
 Version 1.4 (2019-10-10)
 ------------------------
 * New API: get any stack's size, issue #9. 
