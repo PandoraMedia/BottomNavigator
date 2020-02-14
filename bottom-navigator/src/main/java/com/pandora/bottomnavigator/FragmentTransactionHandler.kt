@@ -117,7 +117,7 @@ internal class FragmentTransactionHandler(
             .showOrAttach(showFragment)
             .runOnCommit(runnable)
             .setReorderingAllowed(true)
-            .commit()
+            .commitNow()
     }
 
     private fun showFragment(
