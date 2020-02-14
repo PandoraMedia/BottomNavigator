@@ -1,9 +1,14 @@
 Change Log
 ==========
 
+Version 1.6 (2019-02-14)
+------------------------
+* Upgrade dependencies
+* Bug fix: use commitNow for showAndRemoveFragment transaction
+
 Version 1.5 (2019-12-04)
 ------------------------
-* New API: resetRootFragmentCommandHasObservers 
+* New API: resetRootFragmentCommandHasObservers
 
 Version 1.4 (2019-10-10)
 ------------------------
