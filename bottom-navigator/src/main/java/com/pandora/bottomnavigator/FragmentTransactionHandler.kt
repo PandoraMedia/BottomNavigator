@@ -15,6 +15,7 @@
  */
 package com.pandora.bottomnavigator
 
+import android.os.Bundle
 import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -24,6 +25,7 @@ import com.pandora.bottomnavigator.FragmentTransactionCommand.Clear
 import com.pandora.bottomnavigator.FragmentTransactionCommand.RemoveAllAndAdd
 import com.pandora.bottomnavigator.FragmentTransactionCommand.RemoveAllAndShowExisting
 import com.pandora.bottomnavigator.FragmentTransactionCommand.ShowAndRemove
+import com.pandora.bottomnavigator.FragmentTransactionCommand.ShowAndRemoveWithResult
 import com.pandora.bottomnavigator.FragmentTransactionCommand.ShowExisting
 import java.util.UUID
 
@@ -36,6 +38,7 @@ internal sealed class FragmentTransactionCommand {
     data class AddAndShow(val fragment: Fragment, val tag: TagStructure) : FragmentTransactionCommand()
     data class ShowExisting(val tag: TagStructure) : FragmentTransactionCommand()
     data class ShowAndRemove(val showTag: TagStructure, val removeTag: TagStructure) : FragmentTransactionCommand()
+    data class ShowAndRemoveWithResult(val showTag: TagStructure, val removeTag: TagStructure, val result: Bundle?) : FragmentTransactionCommand()
     data class Clear(val allCurrentTags: List<TagStructure>) : FragmentTransactionCommand()
     data class RemoveAllAndAdd(val remove: List<TagStructure>, val add: AddAndShow) : FragmentTransactionCommand()
     data class RemoveAllAndShowExisting(val remove: List<TagStructure>, val show: ShowExisting) : FragmentTransactionCommand()
@@ -54,6 +57,11 @@ internal class FragmentTransactionHandler(
             is AddAndShow -> addAndShowFragment(command.fragment, command.tag, runnable)
             is ShowExisting -> showFragment(command.tag, runnable)
             is ShowAndRemove -> showAndRemoveFragment(
+                command.showTag,
+                command.removeTag,
+                runnable
+            )
+            is ShowAndRemoveWithResult -> showAndRemoveFragment(
                 command.showTag,
                 command.removeTag,
                 runnable

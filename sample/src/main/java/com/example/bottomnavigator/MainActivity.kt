@@ -27,9 +27,12 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.pandora.bottomnavigator.BottomNavigator
+import com.pandora.bottomnavigator.NavigatorAction
+import io.reactivex.disposables.CompositeDisposable
 
 class MainActivity : AppCompatActivity() {
     private lateinit var navigator: BottomNavigator
+    private var disposables: CompositeDisposable = CompositeDisposable()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,6 +49,17 @@ class MainActivity : AppCompatActivity() {
             defaultTab = R.id.tab2,
             activity = this
         )
+
+        disposables.add(navigator.infoStream().subscribe {
+            navigator.currentFragment()?.let { it1 ->
+                when (it) {
+                    is NavigatorAction.FragmentRemovedWithResult -> {
+                        val result = it.result
+                        // Send result to current fragment
+                    }
+                }
+            }
+        })
     }
 
     override fun onBackPressed() {
