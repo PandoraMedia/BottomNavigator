@@ -17,8 +17,6 @@ package androidx.fragment.app
 
 import android.os.Bundle
 import android.view.View
-import java.io.FileDescriptor
-import java.io.PrintWriter
 import java.util.ArrayList
 
 class FragmentState(var fragment: Fragment, var attached: Boolean, var shown: Boolean)
@@ -37,8 +35,6 @@ open class FakeFragmentManager : FragmentManager() {
     override fun findFragmentByTag(tag: String?) = map[tag]?.fragment
 
     override fun getFragments() = map.values.map { it.fragment }
-
-    override fun saveFragmentInstanceState(f: Fragment?) = null
 
     override fun findFragmentById(id: Int): Fragment? {
         TODO(
@@ -76,11 +72,6 @@ open class FakeFragmentManager : FragmentManager() {
 
     override fun addOnBackStackChangedListener(listener: OnBackStackChangedListener) {}
 
-    override fun dump(
-        prefix: String?, fd: FileDescriptor?, writer: PrintWriter?, args: Array<out String>?
-    ) {
-    }
-
     override fun isStateSaved() = false
 
     override fun popBackStack() {}
@@ -97,7 +88,7 @@ open class FakeFragmentManager : FragmentManager() {
 
 class FakeFragmentTransaction(private val original: MutableMap<String?, FragmentState>) :
     FragmentTransaction() {
-    private var mCommitRunnables: ArrayList<Runnable>? = null
+    private var mCommitRunnable: ArrayList<Runnable>? = null
     private val copy = HashMap(original)
 
     private fun findFragmentKey(fragment: Fragment): String? {
@@ -153,7 +144,7 @@ class FakeFragmentTransaction(private val original: MutableMap<String?, Fragment
         original.clear()
         original.putAll(copy)
 
-        mCommitRunnables?.forEach { it.run() }
+        mCommitRunnable?.forEach { it.run() }
 
         return 1
     }
@@ -161,10 +152,10 @@ class FakeFragmentTransaction(private val original: MutableMap<String?, Fragment
     override fun setPrimaryNavigationFragment(fragment: Fragment?) = this
 
     override fun runOnCommit(runnable: Runnable): FragmentTransaction {
-        if (mCommitRunnables == null) {
-            mCommitRunnables = ArrayList()
+        if (mCommitRunnable == null) {
+            mCommitRunnable = ArrayList()
         }
-        mCommitRunnables?.add(runnable)
+        mCommitRunnable?.add(runnable)
 
         return this
     }
