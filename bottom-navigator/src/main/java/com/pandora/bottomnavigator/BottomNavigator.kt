@@ -21,14 +21,9 @@ import androidx.annotation.VisibleForTesting
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.pandora.bottomnavigator.FragmentTransactionCommand.AddAndShow
-import com.pandora.bottomnavigator.FragmentTransactionCommand.Clear
-import com.pandora.bottomnavigator.FragmentTransactionCommand.RemoveAllAndAdd
-import com.pandora.bottomnavigator.FragmentTransactionCommand.RemoveAllAndShowExisting
-import com.pandora.bottomnavigator.FragmentTransactionCommand.ShowAndRemove
-import com.pandora.bottomnavigator.FragmentTransactionCommand.ShowExisting
+import com.pandora.bottomnavigator.FragmentTransactionCommand.*
 import hu.akarnokd.rxjava2.subjects.UnicastWorkSubject
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
@@ -295,7 +290,7 @@ open class BottomNavigator internal constructor() : ViewModel() {
                     it.className, null
                 )
             }
-            is FragmentTransactionCommand.RemoveUnknown -> emptyList() // no info
+            is RemoveUnknown -> emptyList() // no info
         }
     }
 
@@ -322,7 +317,7 @@ open class BottomNavigator internal constructor() : ViewModel() {
             @IdRes fragmentContainer: Int,
             bottomNavigationView: BottomNavigationView
         ): BottomNavigator {
-            val navigator = ViewModelProviders.of(activity).get(BottomNavigator::class.java)
+            val navigator = ViewModelProvider(activity).get(BottomNavigator::class.java)
             val fragmentFactoryWithDetachability =
                 rootFragmentsFactory.mapValues { { FragmentInfo(it.value(), true) } }
             navigator.onCreate(
@@ -364,7 +359,7 @@ open class BottomNavigator internal constructor() : ViewModel() {
             @IdRes fragmentContainer: Int,
             bottomNavigationView: BottomNavigationView
         ): BottomNavigator {
-            val navigator = ViewModelProviders.of(activity).get(BottomNavigator::class.java)
+            val navigator = ViewModelProvider(activity).get(BottomNavigator::class.java)
             navigator.onCreate(
                 rootFragmentsFactory = rootFragmentsFactory,
                 defaultTab = defaultTab,
@@ -381,7 +376,7 @@ open class BottomNavigator internal constructor() : ViewModel() {
          */
         @JvmStatic
         fun provide(activity: FragmentActivity): BottomNavigator =
-            ViewModelProviders.of(activity).get(BottomNavigator::class.java)
+            ViewModelProvider(activity).get(BottomNavigator::class.java)
     }
 
     @VisibleForTesting()
@@ -416,7 +411,7 @@ open class BottomNavigator internal constructor() : ViewModel() {
      */
     private fun cleanupUnknownFragments() {
         val allKnownTags = tabStackMap.keys().map { tabStackMap[it]!! }.flatMap { it.toList() }
-        fragmentCommand(FragmentTransactionCommand.RemoveUnknown(allKnownTags))
+        fragmentCommand(RemoveUnknown(allKnownTags))
     }
 
     private fun validateInputs(

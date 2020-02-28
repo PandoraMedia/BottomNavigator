@@ -20,6 +20,7 @@ import android.view.MenuItem
 import androidx.fragment.app.FakeFragmentManager
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.nhaarman.mockitokotlin2.any
@@ -765,6 +766,7 @@ class BottomNavigatorTest {
         whenever(activity.getViewModelStore()).doReturn(vmStore)
         whenever(activity.lifecycle).doReturn(mock())
         whenever(activity.supportFragmentManager).doReturn(fragmentManager)
+        whenever(activity.defaultViewModelProviderFactory).doReturn(ViewModelProvider.AndroidViewModelFactory.getInstance(mock()))
         return activity
     }
 
