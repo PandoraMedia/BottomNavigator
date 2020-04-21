@@ -19,7 +19,8 @@ import android.os.Bundle
 import android.view.View
 import java.util.ArrayList
 
-class FragmentState(var fragment: Fragment, var attached: Boolean, var shown: Boolean)
+class FragmentState(var fragment: Fragment, var attached: Boolean, var shown: Boolean,
+                    var executedEnterAnim: Int, var executedExitAnim: Int)
 
 open class FakeFragmentManager : FragmentManager() {
     val map = mutableMapOf<String?, FragmentState>()
@@ -27,6 +28,7 @@ open class FakeFragmentManager : FragmentManager() {
     fun detachedFragments() = map.values.filter { !it.attached }.map { it.fragment }
     fun shownFragments() = map.values.filter { it.shown }.map { it.fragment }
     fun hiddenFragments() = map.values.filter { !it.shown }.map { it.fragment }
+    fun executedTransitions(tag: String) = map[tag]?.let { Pair(it.executedEnterAnim, it.executedExitAnim) }
 
     override fun beginTransaction(): FragmentTransaction {
         return FakeFragmentTransaction(map)
@@ -101,18 +103,18 @@ class FakeFragmentTransaction(private val original: MutableMap<String?, Fragment
     }
 
     override fun add(fragment: Fragment, tag: String?): FragmentTransaction {
-        copy[tag] = FragmentState(fragment, true, true)
+        copy[tag] = FragmentState(fragment, true, true, mEnterAnim, mExitAnim)
         fragment.mTag = tag
         return this
     }
 
     override fun add(containerViewId: Int, fragment: Fragment): FragmentTransaction {
-        copy[null] = FragmentState(fragment, true, true)
+        copy[null] = FragmentState(fragment, true, true, mEnterAnim, mExitAnim)
         return this
     }
 
     override fun add(containerViewId: Int, fragment: Fragment, tag: String?): FragmentTransaction {
-        copy[tag] = FragmentState(fragment, true, true)
+        copy[tag] = FragmentState(fragment, true, true, mEnterAnim, mExitAnim)
         fragment.mTag = tag
         return this
     }
@@ -124,7 +126,7 @@ class FakeFragmentTransaction(private val original: MutableMap<String?, Fragment
 
     override fun replace(containerViewId: Int, fragment: Fragment): FragmentTransaction {
         copy.clear()
-        copy[null] = FragmentState(fragment, true, true)
+        copy[null] = FragmentState(fragment, true, true, 0, 0)
         return this
     }
 
@@ -132,7 +134,7 @@ class FakeFragmentTransaction(private val original: MutableMap<String?, Fragment
         containerViewId: Int, fragment: Fragment, tag: String?
     ): FragmentTransaction {
         copy.clear()
-        copy[tag] = FragmentState(fragment, true, true)
+        copy[tag] = FragmentState(fragment, true, true, 0, 0)
         return this
     }
 
@@ -169,10 +171,6 @@ class FakeFragmentTransaction(private val original: MutableMap<String?, Fragment
 
     override fun setAllowOptimization(allowOptimization: Boolean) = this
 
-    override fun setCustomAnimations(enter: Int, exit: Int) = this
-
-    override fun setCustomAnimations(enter: Int, exit: Int, popEnter: Int, popExit: Int) = this
-
     override fun addToBackStack(name: String?) = this
 
     override fun disallowAddToBackStack() = this
@@ -182,12 +180,20 @@ class FakeFragmentTransaction(private val original: MutableMap<String?, Fragment
     override fun setTransition(transit: Int) = this
 
     override fun attach(fragment: Fragment): FragmentTransaction {
-        copy[findFragmentKey(fragment)]?.attached = true
+        copy[findFragmentKey(fragment)]?.apply {
+            executedEnterAnim = mEnterAnim
+            executedExitAnim = mExitAnim
+            attached = true
+        }
         return this
     }
 
     override fun show(fragment: Fragment): FragmentTransaction {
-        copy[findFragmentKey(fragment)]?.shown = true
+        copy[findFragmentKey(fragment)]?.apply {
+            executedEnterAnim = mEnterAnim
+            executedExitAnim = mExitAnim
+            shown = true
+        }
         return this
     }
 

@@ -38,6 +38,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.test.assertNotNull
 
 class BottomNavigatorTest {
     @Rule
@@ -750,6 +751,239 @@ class BottomNavigatorTest {
         // Tab2's stack size is 2
         assertEquals(2, bottomNavigator.stackSize(tab2))
 
+    }
+
+    @Test
+    fun `add a fragment with an open transition`() {
+        // Given a bottom navigator
+        val navigator = BottomNavigator.onCreate(
+            activity = generateActivityMock(),
+            rootFragmentsFactory = rootFragmentsFactory,
+            fragmentContainer = 123,
+            bottomNavigationView = generateBottomViewMock(),
+            defaultTab = tab2
+        ).apply {
+            activityDelegate!!.onActivityStart()
+        }
+
+        // When we add a fragment with an opening animation
+        val frag = mock<Fragment>()
+        navigator.addFragment(frag, enterAnim = 4, exitAnim = 5)
+
+        // Then the transition should be executed
+        val (enterAnim, exitAnim) = assertNotNull(fragmentManager.executedTransitions(frag.tag.orEmpty()))
+        assertEquals(4, enterAnim)
+        assertEquals(5, exitAnim)
+    }
+
+    @Test
+    fun `add a fragment with a pop transition`() {
+        // Given a bottom navigator
+        val navigator = BottomNavigator.onCreate(
+            activity = generateActivityMock(),
+            rootFragmentsFactory = rootFragmentsFactory,
+            fragmentContainer = 123,
+            bottomNavigationView = generateBottomViewMock(),
+            defaultTab = tab2
+        ).apply {
+            activityDelegate!!.onActivityStart()
+        }
+
+        // When we add a fragment with a pop animation
+        val frag = mock<Fragment>()
+        navigator.addFragment(frag, popEnterAnim = 8, popExitAnim = 2)
+
+        // Then no transition should be executed when it's added
+        val (enterAnim, exitAnim) = assertNotNull(fragmentManager.executedTransitions(frag.tag.orEmpty()))
+        assertEquals(0, enterAnim)
+        assertEquals(0, exitAnim)
+
+        // When the fragment is popped
+        navigator.pop()
+
+        // Then the pop transition is executed
+        // Since we removed frag from the fragment manager, we should check the executed transitions
+        // of the new top fragment, which is rootFragment2
+        val (enterAnim2, exitAnim2) = assertNotNull(fragmentManager.executedTransitions(rootFragment2.tag.orEmpty()))
+        assertEquals(8, enterAnim2)
+        assertEquals(2, exitAnim2)
+    }
+
+    @Test
+    fun `add a fragment with an open and pop transition`() {
+        // Given a bottom navigator
+        val navigator = BottomNavigator.onCreate(
+            activity = generateActivityMock(),
+            rootFragmentsFactory = rootFragmentsFactory,
+            fragmentContainer = 123,
+            bottomNavigationView = generateBottomViewMock(),
+            defaultTab = tab2
+        ).apply {
+            activityDelegate!!.onActivityStart()
+        }
+
+        // When we add a fragment with both open and pop animations
+        val frag = mock<Fragment>()
+        navigator.addFragment(frag, enterAnim = 1, exitAnim = 4, popEnterAnim = 9, popExitAnim = 3)
+
+        // Then the opening transition should be executed
+        val (enterAnim, exitAnim) = assertNotNull(fragmentManager.executedTransitions(frag.tag.orEmpty()))
+        assertEquals(1, enterAnim)
+        assertEquals(4, exitAnim)
+
+        // When the fragment is popped
+        navigator.pop()
+
+        // Then the pop transition should be executed
+        val (enterAnim2, exitAnim2) = assertNotNull(fragmentManager.executedTransitions(rootFragment2.tag.orEmpty()))
+        assertEquals(9, enterAnim2)
+        assertEquals(3, exitAnim2)
+    }
+
+    @Test
+    fun `pop tabs with different transitions`() {
+        // Given a bottom navigator with 3 added fragments with different pop transitions
+        val navigator = BottomNavigator.onCreate(
+            activity = generateActivityMock(),
+            rootFragmentsFactory = rootFragmentsFactory,
+            fragmentContainer = 123,
+            bottomNavigationView = generateBottomViewMock(),
+            defaultTab = tab2
+        ).apply {
+            activityDelegate!!.onActivityStart()
+        }
+
+        val frag = mock<Fragment>()
+        val frag2 = mock<Fragment>()
+        val frag3 = mock<Fragment>()
+
+        navigator.addFragment(frag, popEnterAnim = 1, popExitAnim = 2)
+        navigator.addFragment(frag2, popEnterAnim = 3, popExitAnim = 4)
+        navigator.addFragment(frag3, popEnterAnim = 5, popExitAnim = 6)
+
+        // When fragment3 is popped
+        navigator.pop()
+
+        // Then the fragment3's pop transitions should be executed
+        val (enterAnim2, exitAnim2) = assertNotNull(fragmentManager.executedTransitions(frag2.tag.orEmpty()))
+        assertEquals(5, enterAnim2)
+        assertEquals(6, exitAnim2)
+
+        // When fragment2 is popped
+        navigator.pop()
+
+        // Then the fragment2's pop transitions should be executed
+        val (enterAnim3, exitAnim3) = assertNotNull(fragmentManager.executedTransitions(frag.tag.orEmpty()))
+        assertEquals(3, enterAnim3)
+        assertEquals(4, exitAnim3)
+
+        // When fragment1 is popped
+        navigator.pop()
+
+        // then the fragment1's pop transitions should be executed
+        val (enterAnim4, exitAnim4) = assertNotNull(fragmentManager.executedTransitions(rootFragment2.tag.orEmpty()))
+        assertEquals(1, enterAnim4)
+        assertEquals(2, exitAnim4)
+    }
+
+    @Test
+    fun `reset a tab with a fragment with transitions`() {
+        // Given a bottom navigator that has added a fragment with transitions
+        val navigator = BottomNavigator.onCreate(
+            activity = generateActivityMock(),
+            rootFragmentsFactory = rootFragmentsFactory,
+            fragmentContainer = 123,
+            bottomNavigationView = generateBottomViewMock(),
+            defaultTab = tab2
+        ).apply {
+            activityDelegate!!.onActivityStart()
+        }
+
+        val frag = mock<Fragment>()
+        navigator.addFragment(frag, enterAnim = 1, exitAnim = 4, popEnterAnim = 9, popExitAnim = 3)
+
+        // When the tab is reset
+        navigator.reset(tab2, false)
+
+        // Then the pop transition should be executed
+        val (enterAnim2, exitAnim2) = assertNotNull(fragmentManager.executedTransitions(rootFragment2.tag.orEmpty()))
+        assertEquals(9, enterAnim2)
+        assertEquals(3, exitAnim2)
+    }
+
+    @Test
+    fun `reset a tab with fragments with transitions`() {
+        // Given a bottom navigator and 5 added fragments with pop animations
+        val navigator = BottomNavigator.onCreate(
+            activity = generateActivityMock(),
+            rootFragmentsFactory = rootFragmentsFactory,
+            fragmentContainer = 123,
+            bottomNavigationView = generateBottomViewMock(),
+            defaultTab = tab2
+        ).apply {
+            activityDelegate!!.onActivityStart()
+        }
+
+        val frag = mock<Fragment>()
+        val frag2 = mock<Fragment>()
+        val frag3 = mock<Fragment>()
+        val frag4 = mock<Fragment>()
+        val frag5 = mock<Fragment>()
+
+        navigator.addFragment(frag, popEnterAnim = 1, popExitAnim = 2)
+        navigator.addFragment(frag2, popEnterAnim = 3, popExitAnim = 4)
+        navigator.addFragment(frag3, popEnterAnim = 5, popExitAnim = 6)
+        navigator.addFragment(frag4, popEnterAnim = 7, popExitAnim = 8)
+        navigator.addFragment(frag5, popEnterAnim = 9, popExitAnim = 10)
+
+        // When the tab is reset
+        navigator.reset(tab2, false)
+
+        // then the pop transition should be executed
+        val (enterAnim2, exitAnim2) = assertNotNull(fragmentManager.executedTransitions(rootFragment2.tag.orEmpty()))
+        assertEquals(9, enterAnim2)
+        assertEquals(10, exitAnim2)
+    }
+
+    @Test
+    fun `switch tabs with a fragment with transitions`() {
+        // Given a bottom navigator with a fragment with both open and pop animations
+        val navigator = BottomNavigator.onCreate(
+            activity = generateActivityMock(),
+            rootFragmentsFactory = rootFragmentsFactory,
+            fragmentContainer = 123,
+            bottomNavigationView = generateBottomViewMock(),
+            defaultTab = tab2
+        ).apply {
+            activityDelegate!!.onActivityStart()
+        }
+
+        val frag = mock<Fragment>()
+        navigator.addFragment(frag, enterAnim = 1, exitAnim = 4, popEnterAnim = 9, popExitAnim = 3)
+
+        // When we switch tabs
+        navigator.switchTab(tab1)
+
+        // Then no transition should be executed
+        val (enterAnim, exitAnim) = assertNotNull(fragmentManager.executedTransitions(rootFragment1.tag.orEmpty()))
+        assertEquals(0, enterAnim)
+        assertEquals(0, exitAnim)
+
+        // When we switch back to the original tab
+        navigator.switchTab(tab2)
+
+        // Then no transition should be executed
+        val (enterAnim2, exitAnim2) = assertNotNull(fragmentManager.executedTransitions(frag.tag.orEmpty()))
+        assertEquals(0, enterAnim2)
+        assertEquals(0, exitAnim2)
+
+        // When we pop the original tab
+        navigator.pop()
+
+        // Then the transition should be executed
+        val (enterAnim3, exitAnim3) = assertNotNull(fragmentManager.executedTransitions(rootFragment2.tag.orEmpty()))
+        assertEquals(9, enterAnim3)
+        assertEquals(3, exitAnim3)
     }
 
     private fun <T> TestObserver<T>.assertLatest(predicate: (t: T) -> Boolean) {

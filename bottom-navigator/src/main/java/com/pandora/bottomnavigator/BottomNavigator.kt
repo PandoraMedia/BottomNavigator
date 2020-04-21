@@ -130,15 +130,31 @@ open class BottomNavigator internal constructor() : ViewModel() {
      * that might not be feasable. By setting detachable = false the fragment's view will be kept
      * and memory and just hidden view.
      */
-    open fun addFragment(fragment: Fragment, detachable: Boolean = true) {
-        addFragmentInternal(fragment, currentTab, detachable)
+    open fun addFragment(
+        fragment: Fragment,
+        detachable: Boolean = true,
+        enterAnim: Int = 0,
+        exitAnim: Int = 0,
+        popEnterAnim: Int = 0,
+        popExitAnim: Int = 0
+    ) {
+        addFragmentInternal(
+            fragment,
+            currentTab,
+            detachable,
+            TagStructure.TransitionsData(enterAnim, exitAnim, popEnterAnim, popExitAnim)
+        )
     }
 
     /**
      * Add fragment to the specified tab and switches to that tab
      */
-    private fun addFragmentInternal(fragment: Fragment, @IdRes tab: Int, detachable: Boolean) {
-        val fragmentTag = TagStructure(fragment, detachable)
+    private fun addFragmentInternal(
+        fragment: Fragment,
+        @IdRes tab: Int, detachable: Boolean,
+        transitionsData: TagStructure.TransitionsData? = null
+    ) {
+        val fragmentTag = TagStructure(fragment, detachable, transitionsData)
         if (currentTab != tab) currentTab = tab
         tabStackMap.push(tab, fragmentTag)
         fragmentCommand(AddAndShow(fragment, fragmentTag))

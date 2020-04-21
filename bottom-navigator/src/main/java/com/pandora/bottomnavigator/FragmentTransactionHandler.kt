@@ -97,11 +97,14 @@ internal class FragmentTransactionHandler(
             }
         }
         val fragment = fm.findFragmentByTag(show.toString())!!
-        transaction.showOrAttach(fragment)
-            .detachOtherFragments(fragment)
-            .runOnCommit(runnable)
-            .setReorderingAllowed(true)
-            .commitNow()
+        transaction.apply {
+            remove.lastOrNull()?.transitionsData?.let { setCustomAnimations(it.popEnterAnim, it.popExitAnim) }
+            showOrAttach(fragment)
+            detachOtherFragments(fragment)
+            runOnCommit(runnable)
+            setReorderingAllowed(true)
+            commitNow()
+        }
     }
 
     private fun showAndRemoveFragment(
@@ -111,13 +114,15 @@ internal class FragmentTransactionHandler(
     ) {
         val showFragment = fm.findFragmentByTag(showTag.toString())!!
         val removeFragment = fm.findFragmentByTag(removeTag.toString())!!
-        fm.beginTransaction()
-            .remove(removeFragment)
-            .detachOtherFragments(showFragment)
-            .showOrAttach(showFragment)
-            .runOnCommit(runnable)
-            .setReorderingAllowed(true)
-            .commitNow()
+        fm.beginTransaction().apply {
+            removeTag.transitionsData?.let { setCustomAnimations(it.popEnterAnim, it.popExitAnim) }
+            remove(removeFragment)
+            detachOtherFragments(showFragment)
+            showOrAttach(showFragment)
+            runOnCommit(runnable)
+            setReorderingAllowed(true)
+            commitNow()
+        }
     }
 
     private fun showFragment(
@@ -146,12 +151,14 @@ internal class FragmentTransactionHandler(
         tag: TagStructure,
         runnable: () -> Unit
     ) {
-        fm.beginTransaction()
-            .add(container, fragment, tag.toString())
-            .detachOtherFragments(fragment)
-            .runOnCommit(runnable)
-            .setReorderingAllowed(true)
-            .commitNow()
+        fm.beginTransaction().apply {
+            tag.transitionsData?.let { setCustomAnimations(it.enterAnim, it.exitAnim) }
+            add(container, fragment, tag.toString())
+            detachOtherFragments(fragment)
+            runOnCommit(runnable)
+            setReorderingAllowed(true)
+            commitNow()
+        }
     }
 
     private fun FragmentTransaction.detachOtherFragments(keep: Fragment): FragmentTransaction {
@@ -211,10 +218,11 @@ internal class FragmentTransactionHandler(
 internal data class TagStructure private constructor(
     val className: String?,
     val detachable: Boolean?,
-    val uuid: String?
+    val uuid: String?,
+    val transitionsData: TransitionsData?
 ) {
-    constructor(fragment: Fragment, detachable: Boolean) :
-        this(fragment::class.java.name, detachable, UUID.randomUUID().toString())
+    constructor(fragment: Fragment, detachable: Boolean, transitionsData: TransitionsData? = null) :
+            this(fragment::class.java.name, detachable, UUID.randomUUID().toString(), transitionsData)
 
     var isOurFragment = true
         private set
@@ -225,7 +233,8 @@ internal data class TagStructure private constructor(
             .append(OURTAG, SEPARATOR
                 , className, SEPARATOR
                 , if (detachable == true) DETACHABLE else "", SEPARATOR
-                , uuid)
+                , uuid, SEPARATOR
+                , transitionsData)
             .toString()
     }
 
@@ -236,19 +245,63 @@ internal data class TagStructure private constructor(
         private const val OURTAG = "com.pandora.navigator"
         private const val SEPARATOR = "|"
         private const val DETACHABLE = "DETACHABLE"
+        private const val TRANSITIONS = "TRANSITIONS"
 
         fun fromTag(tag: String?): TagStructure {
             if (tag == null || !tag.startsWith(OURTAG)) {
-                return TagStructure(null, null, null)
+                return TagStructure(null, null, null, null)
                     .apply { isOurFragment = false }
             }
 
-            val (ourTag, className, detachable, uuid) = tag.split(SEPARATOR)
+            val (tagData, transitions) = TransitionsData.fromTag(tag)
+            val (ourTag, className, detachable, uuid) = tagData.split(SEPARATOR)
 
-            if (ourTag != OURTAG) return TagStructure(null, null, null)
+            if (ourTag != OURTAG) return TagStructure(null, null, null, null)
                 .apply { isOurFragment = false }
 
-            return TagStructure(className, DETACHABLE == detachable, uuid)
+            return TagStructure(className, DETACHABLE == detachable, uuid, transitions)
+        }
+    }
+
+    /**
+     * Data class for a fragment's transitions. Responsible for serializing and de-serializing itself
+     */
+    internal data class TransitionsData(
+        val enterAnim: Int,
+        val exitAnim: Int,
+        val popEnterAnim: Int,
+        val popExitAnim: Int
+    ) {
+        override fun toString(): String {
+            return StringBuilder()
+                .append(TRANSITIONS, SEPARATOR
+                    , enterAnim, SEPARATOR
+                    , exitAnim, SEPARATOR
+                    , popEnterAnim, SEPARATOR
+                    , popExitAnim
+                ).toString()
+        }
+
+        companion object {
+            /**
+             * Extracts the transitions data from the tag and returns a pair with transitions and
+             * the rest of the tag
+             */
+            fun fromTag(tag: String): Pair<String, TransitionsData?> {
+                return if (!tag.contains(TRANSITIONS)) {
+                    Pair(tag, null)
+                } else {
+                    val (remainingTag, transitions) = tag.split(TRANSITIONS)
+                    val (_, openEnterAnim, openExitAnim, closeEnterAnim, closeExitAnim) = transitions.split(SEPARATOR)
+                    Pair(remainingTag,
+                        TransitionsData(
+                            openEnterAnim.toInt(),
+                            openExitAnim.toInt(),
+                            closeEnterAnim.toInt(),
+                            closeExitAnim.toInt())
+                    )
+                }
+            }
         }
     }
 }
