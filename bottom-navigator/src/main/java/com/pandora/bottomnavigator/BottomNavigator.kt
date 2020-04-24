@@ -16,6 +16,8 @@
 package com.pandora.bottomnavigator
 
 import android.view.MenuItem
+import androidx.annotation.AnimRes
+import androidx.annotation.AnimatorRes
 import androidx.annotation.IdRes
 import androidx.annotation.VisibleForTesting
 import androidx.fragment.app.Fragment
@@ -129,14 +131,24 @@ open class BottomNavigator internal constructor() : ViewModel() {
      * Ideally you desing your fragments to be able to handle detach/attach but in some situations
      * that might not be feasable. By setting detachable = false the fragment's view will be kept
      * and memory and just hidden view.
+     *
+     * @param enterAnim An animation or animator resource ID used for the enter animation on the
+     *              view of this fragment when it's added.
+     * @param exitAnim An animation or animator resource ID used for the exit animation on the
+     *              view of the fragment being removed or detached when this fragment is added.
+     * @param popEnterAnim An animation or animator resource ID used for the enter animation on the
+     *              view of the resuming fragment when it is re-added or reattached when this
+     *              fragment is popped
+     * @param popExitAnim An animation or animator resource ID used for the exit animation on this
+     *              fragment when it is popped
      */
     open fun addFragment(
         fragment: Fragment,
         detachable: Boolean = true,
-        enterAnim: Int = 0,
-        exitAnim: Int = 0,
-        popEnterAnim: Int = 0,
-        popExitAnim: Int = 0
+        @AnimatorRes @AnimRes enterAnim: Int = 0,
+        @AnimatorRes @AnimRes exitAnim: Int = 0,
+        @AnimatorRes @AnimRes popEnterAnim: Int = 0,
+        @AnimatorRes @AnimRes popExitAnim: Int = 0
     ) {
         addFragmentInternal(
             fragment,
@@ -151,7 +163,8 @@ open class BottomNavigator internal constructor() : ViewModel() {
      */
     private fun addFragmentInternal(
         fragment: Fragment,
-        @IdRes tab: Int, detachable: Boolean,
+        @IdRes tab: Int,
+        detachable: Boolean,
         transitionsData: TagStructure.TransitionsData? = null
     ) {
         val fragmentTag = TagStructure(fragment, detachable, transitionsData)

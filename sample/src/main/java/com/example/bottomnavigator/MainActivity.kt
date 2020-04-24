@@ -75,6 +75,10 @@ class SampleFragment : Fragment() {
 
 
         rootView.findViewById<Button>(R.id.btn).setOnClickListener {
+            bottomNavigator.addFragment(SampleFragment())
+        }
+
+        rootView.findViewById<Button>(R.id.btn_animated).setOnClickListener {
             bottomNavigator.addFragment(
                 SampleFragment(),
                 enterAnim = R.anim.open_enter_slide,

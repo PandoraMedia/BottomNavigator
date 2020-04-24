@@ -234,7 +234,7 @@ internal data class TagStructure private constructor(
                 , className, SEPARATOR
                 , if (detachable == true) DETACHABLE else "", SEPARATOR
                 , uuid, SEPARATOR
-                , transitionsData)
+                , transitionsData ?: "")
             .toString()
     }
 
@@ -245,7 +245,6 @@ internal data class TagStructure private constructor(
         private const val OURTAG = "com.pandora.navigator"
         private const val SEPARATOR = "|"
         private const val DETACHABLE = "DETACHABLE"
-        private const val TRANSITIONS = "TRANSITIONS"
 
         fun fromTag(tag: String?): TagStructure {
             if (tag == null || !tag.startsWith(OURTAG)) {
@@ -253,13 +252,12 @@ internal data class TagStructure private constructor(
                     .apply { isOurFragment = false }
             }
 
-            val (tagData, transitions) = TransitionsData.fromTag(tag)
-            val (ourTag, className, detachable, uuid) = tagData.split(SEPARATOR)
+            val (ourTag, className, detachable, uuid, transitionsData) = tag.split(SEPARATOR)
 
             if (ourTag != OURTAG) return TagStructure(null, null, null, null)
                 .apply { isOurFragment = false }
 
-            return TagStructure(className, DETACHABLE == detachable, uuid, transitions)
+            return TagStructure(className, DETACHABLE == detachable, uuid, TransitionsData.fromTag(transitionsData))
         }
     }
 
@@ -274,33 +272,30 @@ internal data class TagStructure private constructor(
     ) {
         override fun toString(): String {
             return StringBuilder()
-                .append(TRANSITIONS, SEPARATOR
-                    , enterAnim, SEPARATOR
-                    , exitAnim, SEPARATOR
-                    , popEnterAnim, SEPARATOR
+                .append(
+                    enterAnim, TRANSITIONS_SEPARATOR
+                    , exitAnim, TRANSITIONS_SEPARATOR
+                    , popEnterAnim, TRANSITIONS_SEPARATOR
                     , popExitAnim
                 ).toString()
         }
 
         companion object {
+            const val TRANSITIONS_SEPARATOR = "."
+
             /**
-             * Extracts the transitions data from the tag and returns a pair with transitions and
-             * the rest of the tag
+             * Returns a transition object if the string contains the transitions separator, or null
              */
-            fun fromTag(tag: String): Pair<String, TransitionsData?> {
-                return if (!tag.contains(TRANSITIONS)) {
-                    Pair(tag, null)
-                } else {
-                    val (remainingTag, transitions) = tag.split(TRANSITIONS)
-                    val (_, openEnterAnim, openExitAnim, closeEnterAnim, closeExitAnim) = transitions.split(SEPARATOR)
-                    Pair(remainingTag,
-                        TransitionsData(
-                            openEnterAnim.toInt(),
-                            openExitAnim.toInt(),
-                            closeEnterAnim.toInt(),
-                            closeExitAnim.toInt())
+            fun fromTag(tag: String): TransitionsData? {
+                return if (tag.contains(TRANSITIONS_SEPARATOR)) {
+                    val (enterAnim, exitAnim, popEnterAnim, popExitAnim) = tag.split(TRANSITIONS_SEPARATOR)
+                    TransitionsData(
+                        enterAnim.toInt(),
+                        exitAnim.toInt(),
+                        popEnterAnim.toInt(),
+                        popExitAnim.toInt()
                     )
-                }
+                } else null
             }
         }
     }
