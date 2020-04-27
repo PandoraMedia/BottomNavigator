@@ -131,6 +131,21 @@ open class BottomNavigator internal constructor() : ViewModel() {
      * Ideally you desing your fragments to be able to handle detach/attach but in some situations
      * that might not be feasable. By setting detachable = false the fragment's view will be kept
      * and memory and just hidden view.
+     */
+    open fun addFragment(fragment: Fragment, detachable: Boolean = true) {
+        addFragmentInternal(fragment, currentTab, detachable)
+    }
+
+    /**
+     * Adds fragment to the current tab.
+     *
+     * detachable means that the fragment can handle being detached and re-attached from the FragmentManager
+     * as the user switches tabs back and forth or puts it in a backstack. When a fragment is detachable
+     * onDestroyView is called and then onCreateView when it comes back, this allows the fragment's
+     * View to be removed from memory while it's not being shown to reduce the memory pressure on the app.
+     * Ideally you desing your fragments to be able to handle detach/attach but in some situations
+     * that might not be feasable. By setting detachable = false the fragment's view will be kept
+     * and memory and just hidden view.
      *
      * @param enterAnim An animation or animator resource ID used for the enter animation on the
      *              view of this fragment when it's added.

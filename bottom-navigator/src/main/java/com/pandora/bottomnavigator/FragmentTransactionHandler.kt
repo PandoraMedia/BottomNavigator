@@ -97,14 +97,11 @@ internal class FragmentTransactionHandler(
             }
         }
         val fragment = fm.findFragmentByTag(show.toString())!!
-        transaction.apply {
-            remove.lastOrNull()?.transitionsData?.let { setCustomAnimations(it.popEnterAnim, it.popExitAnim) }
-            showOrAttach(fragment)
-            detachOtherFragments(fragment)
-            runOnCommit(runnable)
-            setReorderingAllowed(true)
-            commitNow()
-        }
+        transaction.showOrAttach(fragment)
+            .detachOtherFragments(fragment)
+            .runOnCommit(runnable)
+            .setReorderingAllowed(true)
+            .commitNow()
     }
 
     private fun showAndRemoveFragment(
