@@ -111,13 +111,15 @@ internal class FragmentTransactionHandler(
     ) {
         val showFragment = fm.findFragmentByTag(showTag.toString())!!
         val removeFragment = fm.findFragmentByTag(removeTag.toString())!!
-        fm.beginTransaction()
-            .remove(removeFragment)
-            .detachOtherFragments(showFragment)
-            .showOrAttach(showFragment)
-            .runOnCommit(runnable)
-            .setReorderingAllowed(true)
-            .commitNow()
+        fm.beginTransaction().apply {
+            removeTag.transitionsData?.let { setCustomAnimations(it.popEnterAnim, it.popExitAnim) }
+            remove(removeFragment)
+            detachOtherFragments(showFragment)
+            showOrAttach(showFragment)
+            runOnCommit(runnable)
+            setReorderingAllowed(true)
+            commitNow()
+        }
     }
 
     private fun showFragment(
@@ -146,12 +148,14 @@ internal class FragmentTransactionHandler(
         tag: TagStructure,
         runnable: () -> Unit
     ) {
-        fm.beginTransaction()
-            .add(container, fragment, tag.toString())
-            .detachOtherFragments(fragment)
-            .runOnCommit(runnable)
-            .setReorderingAllowed(true)
-            .commitNow()
+        fm.beginTransaction().apply {
+            tag.transitionsData?.let { setCustomAnimations(it.enterAnim, it.exitAnim) }
+            add(container, fragment, tag.toString())
+            detachOtherFragments(fragment)
+            runOnCommit(runnable)
+            setReorderingAllowed(true)
+            commitNow()
+        }
     }
 
     private fun FragmentTransaction.detachOtherFragments(keep: Fragment): FragmentTransaction {
@@ -211,10 +215,11 @@ internal class FragmentTransactionHandler(
 internal data class TagStructure private constructor(
     val className: String?,
     val detachable: Boolean?,
-    val uuid: String?
+    val uuid: String?,
+    val transitionsData: TransitionsData?
 ) {
-    constructor(fragment: Fragment, detachable: Boolean) :
-        this(fragment::class.java.name, detachable, UUID.randomUUID().toString())
+    constructor(fragment: Fragment, detachable: Boolean, transitionsData: TransitionsData? = null) :
+            this(fragment::class.java.name, detachable, UUID.randomUUID().toString(), transitionsData)
 
     var isOurFragment = true
         private set
@@ -225,7 +230,8 @@ internal data class TagStructure private constructor(
             .append(OURTAG, SEPARATOR
                 , className, SEPARATOR
                 , if (detachable == true) DETACHABLE else "", SEPARATOR
-                , uuid)
+                , uuid, SEPARATOR
+                , transitionsData ?: "")
             .toString()
     }
 
@@ -239,16 +245,55 @@ internal data class TagStructure private constructor(
 
         fun fromTag(tag: String?): TagStructure {
             if (tag == null || !tag.startsWith(OURTAG)) {
-                return TagStructure(null, null, null)
+                return TagStructure(null, null, null, null)
                     .apply { isOurFragment = false }
             }
 
-            val (ourTag, className, detachable, uuid) = tag.split(SEPARATOR)
+            val (ourTag, className, detachable, uuid, transitionsData) = tag.split(SEPARATOR)
 
-            if (ourTag != OURTAG) return TagStructure(null, null, null)
+            if (ourTag != OURTAG) return TagStructure(null, null, null, null)
                 .apply { isOurFragment = false }
 
-            return TagStructure(className, DETACHABLE == detachable, uuid)
+            return TagStructure(className, DETACHABLE == detachable, uuid, TransitionsData.fromTag(transitionsData))
+        }
+    }
+
+    /**
+     * Data class for a fragment's transitions. Responsible for serializing and de-serializing itself
+     */
+    internal data class TransitionsData(
+        val enterAnim: Int,
+        val exitAnim: Int,
+        val popEnterAnim: Int,
+        val popExitAnim: Int
+    ) {
+        override fun toString(): String {
+            return StringBuilder()
+                .append(
+                    enterAnim, TRANSITIONS_SEPARATOR
+                    , exitAnim, TRANSITIONS_SEPARATOR
+                    , popEnterAnim, TRANSITIONS_SEPARATOR
+                    , popExitAnim
+                ).toString()
+        }
+
+        companion object {
+            const val TRANSITIONS_SEPARATOR = "."
+
+            /**
+             * Returns a transition object if the string contains the transitions separator, or null
+             */
+            fun fromTag(tag: String): TransitionsData? {
+                return if (tag.contains(TRANSITIONS_SEPARATOR)) {
+                    val (enterAnim, exitAnim, popEnterAnim, popExitAnim) = tag.split(TRANSITIONS_SEPARATOR)
+                    TransitionsData(
+                        enterAnim.toInt(),
+                        exitAnim.toInt(),
+                        popEnterAnim.toInt(),
+                        popExitAnim.toInt()
+                    )
+                } else null
+            }
         }
     }
 }

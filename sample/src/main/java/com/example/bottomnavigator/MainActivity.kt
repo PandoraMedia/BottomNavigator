@@ -78,6 +78,16 @@ class SampleFragment : Fragment() {
             bottomNavigator.addFragment(SampleFragment())
         }
 
+        rootView.findViewById<Button>(R.id.btn_animated).setOnClickListener {
+            bottomNavigator.addFragment(
+                SampleFragment(),
+                enterAnim = R.anim.open_enter_slide,
+                exitAnim = R.anim.open_exit_slide,
+                popEnterAnim = R.anim.close_enter_slide,
+                popExitAnim = R.anim.close_exit_slide
+            )
+        }
+
         if (bottomNavigator.currentStackSize() > 1) {
             val toolbar = rootView.findViewById<Toolbar>(R.id.toolbar)
             toolbar.navigationIcon = ContextCompat.getDrawable(activity!!, R.drawable.ic_arrow_back_black_24dp)
