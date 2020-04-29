@@ -1,7 +1,11 @@
 Change Log
 ==========
 
-Version 1.6 (2019-02-14)
+Version 1.7 (2020-04-28)
+------------------------
+* Fragment Transition Animations
+
+Version 1.6 (2020-02-14)
 ------------------------
 * Upgrade dependencies
 * Bug fix: use commitNow for showAndRemoveFragment transaction
@@ -18,7 +22,7 @@ Version 1.3 (2019-09-09)
 ------------------------
 * Fix: clearAll bug, issue #6. 
 
-Version 1.2 (2019-08-03)
+Version 1.2 (2019-09-03)
 ------------------------
 * Fix: memory leak after process death
 
