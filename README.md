@@ -14,6 +14,16 @@ tab's stack is exhausted the system back button will navigate to the
 previously selected tab. Rotation is automatically handled and all
 backstacks are preserved.
 
+
+##### Table of Contents  
+[How to Use it](#how-to-use-it)  
+[Multiple taps on a tab](#multiple-taps-on-a-tab)  
+[Detachability](#detachability)  
+[Obtaining a BottomNavigator reference](#obtaining-a-bottomnavigator-reference)  
+[Dependencies](#dependencies)  
+[Gradle](#gradle)  
+
+
 ## How to Use it
 
 BottomNavigator needs an Activity with a BottomNavigationView and a
