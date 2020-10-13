@@ -952,6 +952,47 @@ class BottomNavigatorTest {
         assertEquals(3, exitAnim3)
     }
 
+    @Test
+    fun reentryAfterFinalPop() {
+        // Given a bottom navigator with a fragment with both open and pop animations
+        val activity = generateActivityMock()
+        var navigator = BottomNavigator.onCreate(
+            activity = activity,
+            rootFragmentsFactory = rootFragmentsFactory,
+            fragmentContainer = 123,
+            bottomNavigationView = generateBottomViewMock(),
+            defaultTab = tab2
+        ).apply {
+            activityDelegate!!.onActivityStart()
+        }
+
+        // Then the defaultTab's fragment is shown
+        assertTrue { fragmentManager.attachedFragments()[0] == rootFragment2 }
+
+        // When we pop the last fragment in the stack
+        assertFalse(navigator.pop())
+        // Then no fragments are attached
+        assertTrue { fragmentManager.attachedFragments().isEmpty()}
+
+        // When we call onCreate again
+        navigator = BottomNavigator.onCreate(
+            activity = activity,
+            rootFragmentsFactory = rootFragmentsFactory,
+            fragmentContainer = 123,
+            bottomNavigationView = generateBottomViewMock(),
+            defaultTab = tab2
+        ).apply {
+            activityDelegate!!.onActivityStart()
+        }
+        // Then the defaultTab's fragment is shown again
+        assertTrue { fragmentManager.attachedFragments()[0] == rootFragment2 }
+
+        // When we pop the last fragment in the stack
+        assertFalse(navigator.pop())
+        // Then no fragments are attached
+        assertTrue { fragmentManager.attachedFragments().isEmpty()}
+    }
+
     private fun <T> TestObserver<T>.assertLatest(predicate: (t: T) -> Boolean) {
         assertValueAt(valueCount() - 1, predicate)
     }

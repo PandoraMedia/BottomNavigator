@@ -213,6 +213,8 @@ open class BottomNavigator internal constructor() : ViewModel() {
         val popped = tabStackMap.pop()!!
         val peek = tabStackMap.peek()
         return if (peek == null) {
+            currentTab = -1
+            fragmentCommand(Clear(listOf(popped)))
             false
         } else {
             val (tab, nextFragment) = peek

@@ -59,7 +59,7 @@ internal class ActivityDelegate(
     }
 
     private fun setupBottomNavigationView() {
-        // Don't trigger onNavigationItemSelected when setSelectedItem was called programatically.
+        // Don't trigger onNavigationItemSelected when setSelectedItem was called programmatically.
         var programmaticSelect = false
         bottomNavigationView.setOnNavigationItemSelectedListener {
             if (programmaticSelect) {
