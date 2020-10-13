@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+Version 1.8 (2020-10-12)
+------------------------
+* Fixes issue #21, crash after re-enry into BottomNavigator after having previously popped the
+ last fragment. 
+
 Version 1.7 (2020-04-28)
 ------------------------
 * Fragment Transition Animations

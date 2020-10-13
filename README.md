@@ -141,7 +141,7 @@ of Architecture Components and RxJava.
 
 ```groovy
 dependencies {
-    implementation 'com.pandora.bottomnavigator:bottom-navigator:1.7'
+    implementation 'com.pandora.bottomnavigator:bottom-navigator:1.8'
 }
 ```
 
