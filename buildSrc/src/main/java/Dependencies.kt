@@ -19,19 +19,19 @@ import org.gradle.kotlin.dsl.exclude
 
 object Version {
     const val dokka = "0.9.18"
-    const val kotlin = "1.3.61"
-    const val androidGradlePlugin = "3.5.2"
-    const val rxjava = "2.2.17"
-    const val appCompat = "1.1.0"
-    const val materialComponents = "1.1.0"
-    const val archComponentsLifecycle = "2.2.0"
+    const val kotlin = "1.4.32"
+    const val androidGradlePlugin = "4.1.2"
+    const val rxjava = "2.2.21"
+    const val appCompat = "1.2.0"
+    const val materialComponents = "1.3.0"
+    const val archComponentsLifecycle = "2.3.1"
     const val rxJava2Extensions = "0.20.10"
     const val junit = "4.12"
     const val mockitoKotlinVersion = "2.1.0"
     const val espresso = "3.2.0"
     const val androidxTest = "1.2.0"
     const val androidxTestExt = "1.1.1"
-    const val gradleMavenPublish = "0.8.0"
+    const val gradleMavenPublish = "0.15.0"
 
     object AndroidSdk {
         const val min = 21
@@ -53,7 +53,6 @@ object Lib {
     const val appCompat = "androidx.appcompat:appcompat:${Version.appCompat}"
     const val materialComponents = "com.google.android.material:material:${Version.materialComponents}"
     const val lifecycleViewModel = "androidx.lifecycle:lifecycle-viewmodel:${Version.archComponentsLifecycle}"
-    const val lifecycleExtensions = "androidx.lifecycle:lifecycle-extensions:${Version.archComponentsLifecycle}"
     const val rxjava2 = "io.reactivex.rxjava2:rxjava:${Version.rxjava}"
 
     const val rxjava2Extensions = "com.github.akarnokd:rxjava2-extensions:${Version.rxJava2Extensions}"

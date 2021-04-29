@@ -1,10 +1,9 @@
 buildscript {
     repositories {
-        mavenCentral()
         google()
+        mavenCentral()
         @Suppress("UnstableApiUsage")
         gradlePluginPortal()
-        jcenter()
     }
     dependencies {
         classpath(Lib.BuildPlugin.androidGradlePlugin)
@@ -16,7 +15,6 @@ buildscript {
 
 allprojects {
     repositories {
-        jcenter()
         google()
     }
 }

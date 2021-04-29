@@ -27,7 +27,6 @@ dependencies {
     implementation(Lib.appCompat)
     implementation(Lib.materialComponents)
     implementation(Lib.lifecycleViewModel)
-    implementation(Lib.lifecycleExtensions)
     api(Lib.rxjava2)
 
     implementation(Lib.rxjava2Extensions, Lib.rxJava2ExtensionsExcludes())
