@@ -22,8 +22,11 @@ import androidx.annotation.IdRes
 import androidx.annotation.VisibleForTesting
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.pandora.bottomnavigator.FragmentTransactionCommand.*
 import hu.akarnokd.rxjava2.subjects.UnicastWorkSubject
@@ -369,7 +372,49 @@ open class BottomNavigator internal constructor() : ViewModel() {
             navigator.onCreate(
                 rootFragmentsFactory = fragmentFactoryWithDetachability,
                 defaultTab = defaultTab,
-                activity = activity,
+                fragmentManagerFactory = { activity.supportFragmentManager },
+                handlerLifecycle = activity.lifecycle,
+                fragmentContainer = fragmentContainer,
+                bottomNavigationView = bottomNavigationView
+            )
+            return navigator
+        }
+
+        /**
+         * Configure the BottomNavigator and returns the instance scoped to the provided ViewModelStoreOwner.
+         * BottomNavigator uses Architecture Component's ViewModel to provide the same instance across configuration changes.
+         * `initialize` should be called on every Fragment onCreate.
+         *
+         * Use this method if you want to use a BottomNavigator not right inside an Activity, but inside a Fragment.
+         * The Fragment's child FragmentManager will be used to execute transactions.
+         *
+         * When using this method all rootFragment are setup to be detachable. If you need to specify
+         * detachability for the root fragments use onCreateWithDetachability.
+         *
+         * @param fragment The fragment that hosts the fragment container and the bottomNavigationView
+         * @param instanceOwner The ViewModelStoreOwner that the BottomNavigator instance to use is scoped to.
+         * @param rootFragmentsFactory A map with a function for generating the top-level fragment for each menuItem id in bottomNavigationView.
+         * @param fragmentContainer id of the fragment container in which BottomNavigator will manage the fragments
+         * @param bottomNavigationView The BottomNavigationView that will be wired up the fragment container
+         * @param defaultTab The menuItem Id of the default landing tab
+         */
+        @JvmStatic
+        fun onCreate(
+            fragment: Fragment,
+            instanceOwner: ViewModelStoreOwner,
+            rootFragmentsFactory: Map<Int, () -> Fragment>,
+            @IdRes defaultTab: Int,
+            @IdRes fragmentContainer: Int,
+            bottomNavigationView: BottomNavigationView
+        ): BottomNavigator {
+            val navigator = ViewModelProvider(instanceOwner).get(BottomNavigator::class.java)
+            val fragmentFactoryWithDetachability =
+                rootFragmentsFactory.mapValues { { FragmentInfo(it.value(), true) } }
+            navigator.onCreate(
+                rootFragmentsFactory = fragmentFactoryWithDetachability,
+                defaultTab = defaultTab,
+                fragmentManagerFactory = { fragment.childFragmentManager },
+                handlerLifecycle = fragment.lifecycle,
                 fragmentContainer = fragmentContainer,
                 bottomNavigationView = bottomNavigationView
             )
@@ -409,7 +454,58 @@ open class BottomNavigator internal constructor() : ViewModel() {
             navigator.onCreate(
                 rootFragmentsFactory = rootFragmentsFactory,
                 defaultTab = defaultTab,
-                activity = activity,
+                fragmentManagerFactory = { activity.supportFragmentManager },
+                handlerLifecycle = activity.lifecycle,
+                fragmentContainer = fragmentContainer,
+                bottomNavigationView = bottomNavigationView
+            )
+            return navigator
+        }
+
+        /**
+         * Configure the BottomNavigator and returns the instance scoped to the provided ViewModelStoreOwner.
+         * BottomNavigator uses Architecture Component's ViewModel to provide the same instance across configuration changes.
+         * `initialize` should be called on every Fragment onCreate.
+         *
+         * Use this method if you want to use a BottomNavigator not right inside an Activity, but inside a Fragment.
+         * The Fragment's child FragmentManager will be used to execute transactions.
+         *
+         * When using this method all rootFragment are setup to be detachable. If you need to specify
+         * detachability for the root fragments use onCreateWithDetachability.
+         *
+         * @param fragment The fragment that hosts the fragment container and the bottomNavigationView
+         * @param instanceOwner The ViewModelStoreOwner that the BottomNavigator instance to use is scoped to. Usually, it will be
+         * fragment itself.
+         * @param rootFragmentsFactory A map with a function for generating the top-level FragmentInfo for each menuItem id in bottomNavigationView.
+         * The FragmentInfo class allows you to specify the detachibility of each root fragment.
+         *
+         * isDetachable means that the fragment can handle being detached and re-attached from the FragmentManager
+         * as the user switches tabs back and forth or puts it in a backstack. When a fragment is detachable
+         * onDestroyView is called and then onCreateView when it comes back, this allows the fragment's
+         * View to be removed from memory while it's not being shown to reduce the memory pressure on the app.
+         * Ideally you design your fragments to be able to handle detach/attach but in some situations
+         * that might not be feasable. By setting detachable = false the fragment's view will be kept
+         * and memory and just hidden view.
+         *
+         * @param fragmentContainer id of the fragment container in which BottomNavigator will manage the fragments
+         * @param bottomNavigationView The BottomNavigationView that will be wired up the fragment container
+         * @param defaultTab The menuItem Id of the default landing tab
+         */
+        @JvmStatic
+        fun onCreateWithDetachability(
+            fragment: Fragment,
+            instanceOwner: ViewModelStoreOwner,
+            rootFragmentsFactory: Map<Int, () -> FragmentInfo>,
+            @IdRes defaultTab: Int,
+            @IdRes fragmentContainer: Int,
+            bottomNavigationView: BottomNavigationView
+        ): BottomNavigator {
+            val navigator = ViewModelProvider(instanceOwner).get(BottomNavigator::class.java)
+            navigator.onCreate(
+                rootFragmentsFactory = rootFragmentsFactory,
+                defaultTab = defaultTab,
+                fragmentManagerFactory = { fragment.childFragmentManager },
+                handlerLifecycle = fragment.lifecycle,
                 fragmentContainer = fragmentContainer,
                 bottomNavigationView = bottomNavigationView
             )
@@ -423,6 +519,14 @@ open class BottomNavigator internal constructor() : ViewModel() {
         @JvmStatic
         fun provide(activity: FragmentActivity): BottomNavigator =
             ViewModelProvider(activity).get(BottomNavigator::class.java)
+
+        /**
+         * Retrieves the Fragment-scoped instance of BottomNavigator that has been previously initialized.
+         * BottomNavigator uses Architecture Component's ViewModel to provide the same instance across configuration changes.
+         */
+        @JvmStatic
+        fun provide(fragment: Fragment): BottomNavigator =
+            ViewModelProvider(fragment).get(BottomNavigator::class.java)
     }
 
     @VisibleForTesting()
@@ -431,7 +535,8 @@ open class BottomNavigator internal constructor() : ViewModel() {
     private fun onCreate(
         rootFragmentsFactory: Map<Int, () -> FragmentInfo>,
         @IdRes defaultTab: Int,
-        activity: FragmentActivity,
+        fragmentManagerFactory: () -> FragmentManager,
+        handlerLifecycle: Lifecycle,
         fragmentContainer: Int,
         bottomNavigationView: BottomNavigationView
     ) {
@@ -439,11 +544,10 @@ open class BottomNavigator internal constructor() : ViewModel() {
         this.rootFragmentsFactory = rootFragmentsFactory
         this.defaultTab = defaultTab
         if (currentTab == -1) switchTab(defaultTab)
-        val fragmentManagerFactory = { activity.supportFragmentManager }
 
         activityDelegate?.clear()
         activityDelegate = ActivityDelegate(
-            fragmentContainer, fragmentManagerFactory, activity.lifecycle, bottomNavigationView,
+            fragmentContainer, fragmentManagerFactory, handlerLifecycle, bottomNavigationView,
             this
         )
 
