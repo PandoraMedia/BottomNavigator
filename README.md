@@ -26,8 +26,8 @@ backstacks are preserved.
 
 ## How to Use it
 
-BottomNavigator needs an Activity with a BottomNavigationView and a
-fragment container. 
+BottomNavigator needs to be hosted by an Activity or Fragment with a BottomNavigationView and a
+child fragment container.
 
 ```xml
 <LinearLayout 
@@ -49,7 +49,7 @@ fragment container.
 </LinearLayout>
 ```
 
-Then, in the activity's onCreate you initialize the BottomNavigator by
+Then, in the host activity's onCreate or host fragment's onViewCreated you initialize the BottomNavigator by
 calling its onCreate function. You need to provide a
 `rootFragmentsFactory` that maps the BottomNavigationView's menu items
 to the root fragment for each tab. And a `defaultTab` which is the first
@@ -124,12 +124,11 @@ providing `FragmentInfo` objects to the `rootFragmentsFactory`.
 
 ## Obtaining a BottomNavigator reference
 
-BottomNavigator is scoped to an activity session, this means that after
-rotation a new Activity gets the same instance from
-`BottomNavigator.onCreate` as the previous Activity instance. Fragments
-and other objects with reference to the Activity can obtain the same
-activity session's navigator instance by calling
-`BottomNavigator.provide(activity)`. This allows the Fragments to add
+BottomNavigator is scoped to an activity or fragment session, this means that after
+rotation a new host Activity or Fragment gets the same instance from
+`BottomNavigator.onCreate` as the previous instance. Fragments
+and other objects with reference to the host can obtain the same navigator instance by calling
+`BottomNavigator.provide(host)`. This allows the Fragments to add
 other Fragments to the BottomNavigator.
 
 ## Dependencies
